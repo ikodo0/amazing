@@ -4,13 +4,16 @@
 
 Architecture diagram in on miro.com.
 
+src — mazegen
+app — start app
+
 ## M0
 [+] M0.1 *(blue)*: github setup, entry python file, makefile, lints check on pull request, Makefile.
 
 [+] M0.2 *(orange)*: bitwise walls layout.
 
 ## M1
-[] M1.1 *(blue)*: parse config, validate, store in object.
+[+] M1.1 *(blue)*: parse config, validate, store in object.
 
 [] M1.2 *(orange)*: maze window opens, render grid from parsed object.
 

@@ -7,11 +7,13 @@ install: $(VENV)
 
 $(VENV):
 	python3 -m venv $(VENV)
+
 run:
-	python3 amazing.py
+	python3 a_maze_ing.py config.txt
 
 debug:
-	python3 -m pdb amazing.py
+	python3 -m pdb a_maze_ing.py config.txt
+
 lint:
 	$(PY)/flake8 .
 	$(PY)/mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
@@ -19,6 +21,7 @@ lint:
 lint-strict:
 	$(PY)/flake8 .
 	$(PY)/mypy --strict .
+
 clean:
 	rm -rf __pycache__ .mypy_cache .pytest_cache
 
