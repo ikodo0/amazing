@@ -5,6 +5,7 @@
 Architecture diagram in on miro.com.
 
 src — mazegen
+
 app — start app
 
 ## M0

@@ -43,4 +43,4 @@ def read_config(config: str) -> Config:
                         )
                 key, value = item.split("=", 1)
                 data[key] = value
-        return Config(**data)
+        return Config.model_validate(data)

@@ -1,12 +1,18 @@
-from app.main.config import read_config
-from pydantic import ValidationError
 import sys
+from pydantic import ValidationError
+from app.main.config import read_config
+from mazegen import MazeGenerator
 
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         try:
             config = read_config(sys.argv[1])
-            print(config)
+            maze = MazeGenerator(
+                config.WIDTH,
+                config.HEIGHT,
+                config.SEED,
+                config.PERFECT
+            ).generate()
         except (ValidationError) as e:
             for err in e.errors():
                 print(err["msg"], file=sys.stderr)
