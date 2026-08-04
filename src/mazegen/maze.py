@@ -1,6 +1,6 @@
 N, S, E, W = 1, 2, 4, 8
 MOVES = {N: 0, E: 1, S: 2, W: 3}
-STEP = {(0, -1): N, (0, 1): S, (1, 0): E, (-1, 0): W}
+DIRECTION = {(0, -1): N, (0, 1): S, (1, 0): E, (-1, 0): W}
 
 
 class Maze:
@@ -13,6 +13,12 @@ class Maze:
             for x in range(width):
                 row.append(Cell(x, y))
             self.grid.append(row)
+    
+    def carve(x, y, d) -> None:
+        print("ff")
+    
+    def has_wall(x, y, d) -> None:
+        print("ff")
 
 
 class Cell:
@@ -29,7 +35,7 @@ class MazeGenerator:
         height: int,
         seed: int | None = None,
         is_perfect: bool = True
-                ):
+                ) -> None:
         self.width = width
         self.height = height
         self.seed = seed
