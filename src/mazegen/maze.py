@@ -1,6 +1,18 @@
+import random
+
 N, S, E, W = 1, 2, 4, 8
+
+DELTA = {N: (0, -1), S: (0, 1), E: (1, 0), W: (-1, 0)}
+OPPOSITE = {N: S, S: N, E: W, W: E}
+
 MOVES = {N: 0, E: 1, S: 2, W: 3}
-DIRECTION = {(0, -1): N, (0, 1): S, (1, 0): E, (-1, 0): W}
+STEP = {(0, -1): N, (0, 1): S, (1, 0): E, (-1, 0): W}
+
+class Cell:
+    def __init__(self, x: int, y: int) -> None:
+        self.x = x
+        self.y = y
+        self.walls = N | S | E | W
 
 
 class Maze:
@@ -14,18 +26,23 @@ class Maze:
                 row.append(Cell(x, y))
             self.grid.append(row)
     
-    def carve(x, y, d) -> None:
-        print("ff")
-    
-    def has_wall(x, y, d) -> None:
-        print("ff")
 
+    def in_bounds(self, x: int, y: int) -> bool:
+        return 0 <= x < self.width and 0 <= y < self.height
 
-class Cell:
-    def __init__(self, x: int, y: int) -> None:
-        self.x = x
-        self.y = y
-        self.walls = N | S | E | W
+    def cell(self, x: int, y: int) -> Cell:
+        return self.grid[y][x]
+
+    def carve(self, x:int , y:int , d: int) -> None:
+        dx, dy = DELTA[d]
+        nx, ny = x + dx, y + dy
+        if not self.in_bounds(nx, ny):
+            raise ValueError(f"{d} from ({x}, {y})is out bound")
+        self.cell(x, y).walls &= ~d
+        self.cell(nx, ny).walls &= ~ OPPOSITE[d]
+
+    def has_wall(self, x: int, y: int, d: int) -> None:
+        print("ff")
 
 
 class MazeGenerator:

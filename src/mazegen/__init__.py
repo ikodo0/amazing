@@ -1,8 +1,12 @@
-from .maze import MazeGenerator, Maze, Cell
+from .maze import MazeGenerator, Maze, Cell, N, S, E, W
 
 
 __all__ = [
     "MazeGenerator",
     "Maze",
-    "Cell"
+    "Cell",
+    "N",
+    "S",
+    "E",
+    "W"
 ]
