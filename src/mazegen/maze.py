@@ -1,7 +1,10 @@
 import random
+from typing import Iterator
+
 
 N, S, E, W = 1, 2, 4, 8
 
+WORD_DELTA = {1: "North", 2: "East", 4: "South", 8: "West"}
 DELTA = {N: (0, -1), S: (0, 1), E: (1, 0), W: (-1, 0)}
 OPPOSITE = {N: S, S: N, E: W, W: E}
 
@@ -9,6 +12,7 @@ MOVES = {N: 0, E: 1, S: 2, W: 3}
 STEP = {(0, -1): N, (0, 1): S, (1, 0): E, (-1, 0): W}
 
 class Cell:
+    """Base entity of maze."""
     def __init__(self, x: int, y: int) -> None:
         self.x = x
         self.y = y
@@ -16,6 +20,7 @@ class Cell:
 
 
 class Maze:
+    """Where maze grid lives with all methods."""
     def __init__(self, width: int, height: int) -> None:
         self.width = width
         self.height = height
@@ -28,24 +33,36 @@ class Maze:
     
 
     def in_bounds(self, x: int, y: int) -> bool:
+        """Returns bool if inside bounds of maze"""
         return 0 <= x < self.width and 0 <= y < self.height
 
     def cell(self, x: int, y: int) -> Cell:
+        """Returns a cell"""
         return self.grid[y][x]
 
     def carve(self, x:int , y:int , d: int) -> None:
+        """Takes coords and direction of Cell."""
+        """Carves 'd' wall on current cell in opposite on 'd' Cell."""
         dx, dy = DELTA[d]
         nx, ny = x + dx, y + dy
         if not self.in_bounds(nx, ny):
-            raise ValueError(f"{d} from ({x}, {y})is out bound")
-        self.cell(x, y).walls &= ~d
+            raise ValueError(f"{WORD_DELTA[d]} from ({x}, {y}) is out bound")
+        self.cell(x, y).walls &= ~ d
         self.cell(nx, ny).walls &= ~ OPPOSITE[d]
 
-    def has_wall(self, x: int, y: int, d: int) -> None:
-        print("ff")
+    def has_wall(self, x: int, y: int, d: int) -> bool:
+        """Returns bool if has Cell on direction."""
+        return bool(self.cell(x, y).walls & d)
 
+    def neighbors(self, x: int, y: int) -> Iterator[tuple[int, int, int]]:
+        """Yields list with all neighbors, coords and delta from current."""
+        for d, (dx, dy) in DELTA.items():
+            nx, ny = x + dx, y + dy
+            if self.in_bounds(nx, ny):
+                yield nx, ny, d
 
 class MazeGenerator:
+    """Class that is exported for generating and solving maze."""
     def __init__(
         self,
         width: int,
@@ -59,8 +76,29 @@ class MazeGenerator:
         self.is_perfect = is_perfect
 
     def generate(self) -> Maze:
+        """Randomly carves a perfect maze using DFS."""
+        """Checks unvisited neightbors, randomly selectes where to move."""
+        """If no movement possible, come back and continue."""
+        """It appends and pops until stack is empty."""
         maze = Maze(self.width, self.height)
-        print(maze)
+        random_gen = random.Random(self.seed)
+        start = (0, 0)
+        visited = {start}
+        stack = [start]
+        while stack:
+            x, y = stack[-1]
+            not_visited = []
+            neighbors = maze.neighbors(x, y)
+            for nx, ny, d in neighbors:
+                if (nx, ny) not in visited:
+                    not_visited.append((nx, ny, d))
+            if not_visited:
+                nx, ny, d = random_gen.choice(not_visited)
+                maze.carve(x, y, d)
+                visited.add((nx, ny))
+                stack.append((nx, ny))
+            else:
+                stack.pop()
         if not self.is_perfect:
             print("We will carve it")
         return maze
