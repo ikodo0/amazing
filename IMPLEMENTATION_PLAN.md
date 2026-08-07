@@ -5,6 +5,7 @@
 Architecture diagram in on miro.com.
 
 src — mazegen
+
 app — start app
 
 ## M0
@@ -18,7 +19,7 @@ app — start app
 [] M1.2 *(orange)*: maze window opens, render grid from parsed object.
 
 ## M2
-[] M2.1 *(blue)*: perfect maze generation (DFS / backtracker).
+[+] M2.1 *(blue)*: perfect maze generation (DFS / backtracker).
 
 [] M2.2 *(orange)*: render Maze, settings screen, show entry/exit points.
 
