@@ -61,6 +61,7 @@ class Maze:
             if self.in_bounds(nx, ny):
                 yield nx, ny, d
 
+
 class MazeGenerator:
     """Class that is exported for generating and solving maze."""
     def __init__(
@@ -91,7 +92,7 @@ class MazeGenerator:
             neighbors = maze.neighbors(x, y)
             for nx, ny, d in neighbors:
                 if (nx, ny) not in visited:
-                    not_visited.append((nx, ny, d))
+                    not_visited.append((nx, ny, d))      
             if not_visited:
                 nx, ny, d = random_gen.choice(not_visited)
                 maze.carve(x, y, d)
@@ -102,3 +103,4 @@ class MazeGenerator:
         if not self.is_perfect:
             print("We will carve it")
         return maze
+    
