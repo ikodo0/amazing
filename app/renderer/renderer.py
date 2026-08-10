@@ -1,9 +1,10 @@
 import ctypes
 from mlx import Mlx
-from render.component import DrawCommand, DrawRect, DrawText, DrawTexture
-from render.font import TTFFont
-from render.utils import RGB, Keycode, Rect
-from render.screen import Screen
+from app.renderer.actions import NavigationCommand, ScreenAction
+from app.renderer.component import DrawCommand, DrawRect, DrawText, DrawTexture
+from app.renderer.font import TTFFont
+from app.renderer.utils import RGB, Keycode, Rect
+from app.renderer.screen import Screen
 from typing import Any
 from time import time
 from typing import Callable
@@ -65,9 +66,20 @@ class Renderer(Mlx):
 
     def _hk_mouse(self, code: int, x, y, _param: Any) -> None:
         keycode = Keycode(code)
-        for screen in self._screen_stack:
-            for c in screen.components:
+        for s in self._screen_stack:
+            for c in s.components:
                 if self._point_in_rect(x, y, c.rect):
+                    if hasattr(c, 'navigation_command') and c.navigation_command:
+                        cmd: NavigationCommand = c.navigation_command
+                        if cmd.action == ScreenAction.PUSH and cmd.screen:
+                            self.push_screen(cmd.screen)
+                        elif cmd.action == ScreenAction.POP:
+                            self.pop_screen()
+                        elif cmd.action == ScreenAction.REPLACE and cmd.screen:
+                            self.pop_screen()
+                            self.push_screen(cmd.screen)
+                        elif cmd.action == ScreenAction.CLEAR:
+                            self.clear_screens()
                     c.on_click(keycode)
 
     def _hk_close(self, _param: Any) -> None:

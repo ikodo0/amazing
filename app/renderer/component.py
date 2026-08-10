@@ -1,8 +1,9 @@
 from typing import Callable, Protocol
 from dataclasses import dataclass
-from render.font import TTFFont
-from render.texture import Texture
-from render.utils import RGB, Keycode, Rect
+from app.renderer.actions import NavigationCommand
+from app.renderer.font import TTFFont
+from app.renderer.texture import Texture
+from app.renderer.utils import RGB, Keycode, Rect
 
 
 TextureOrColor = RGB | Texture
@@ -84,7 +85,7 @@ class Tile(Component):
         return [DrawTexture(self.rect, self.texture)]
 
     def on_click(self, key: Keycode):
-        ...
+        pass
 
 
 class Text(Component):
@@ -129,6 +130,7 @@ class Button(Component):
         self.visible = True
         self.z = z
         self.on_click_callback: Callable | None = None
+        self.navigation_command: NavigationCommand | None = None
 
     def render(self, hovered: bool) -> list[DrawCommand]:
         """Render the button and return draw commands."""

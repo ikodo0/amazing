@@ -1,4 +1,4 @@
-from render.utils import RGB
+from app.renderer.utils import RGB
 
 
 class Texture:
