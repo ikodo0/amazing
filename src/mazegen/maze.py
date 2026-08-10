@@ -2,6 +2,7 @@ import random
 from typing import Iterator
 
 
+# TODO: change this to an Enum what the fuck??? Makes WORD_DELTA redundant and OPPOSITE is ??????????
 N, S, E, W = 1, 2, 4, 8
 
 WORD_DELTA = {N: "North", 2: "South", 4: "East", 8: "West"}
