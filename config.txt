@@ -6,3 +6,4 @@ EXIT=19,14
 #SEED=1
 OUTPUT_FILE=maze.txt
 PERFECT=False
+PATTERN=True

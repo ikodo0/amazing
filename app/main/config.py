@@ -10,6 +10,7 @@ class Config(BaseModel):
     PERFECT: bool = Field()
     OUTPUT_FILE: str = Field()
     SEED: Optional[int] = Field(default=None)
+    PATTERN: Optional[bool] = Field(default=True)
 
     @field_validator("ENTRY", "EXIT", mode="before")
     @classmethod

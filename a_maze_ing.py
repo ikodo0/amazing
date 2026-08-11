@@ -19,7 +19,8 @@ def main() -> None:
                 config.WIDTH,
                 config.HEIGHT,
                 config.SEED,
-                config.PERFECT
+                config.PERFECT,
+                config.PATTERN
             ).generate()
             # m = MazeGenerator(10, 10, seed=42).generate()
             print(sum(1 for row in m.grid for c in row if c.walls != 15))

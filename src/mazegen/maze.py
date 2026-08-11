@@ -12,6 +12,18 @@ OPPOSITE = {N: S, S: N, E: W, W: E}
 MOVES = {N: 0, E: 1, S: 2, W: 3}
 STEP = {(0, -1): N, (0, 1): S, (1, 0): E, (-1, 0): W}
 
+PATTERN = [
+    "X  X XXX",
+    "X  X   X",
+    "XXXX XXX",
+    "   X X  ",
+    "   X XXX"
+]
+
+PATTERN_W = len(PATTERN[0])
+PATTERN_H = len(PATTERN)
+MARGIN = 1
+
 
 class Cell:
     """Base entity of maze."""
@@ -70,14 +82,17 @@ class MazeGenerator:
         width: int,
         height: int,
         seed: int | None = None,
-        is_perfect: bool = True
+        is_perfect: bool = True,
+        has_pattern: bool = True
                 ) -> None:
         self.width = width
         self.height = height
         self.seed = seed
         self.is_perfect = is_perfect
+        self.has_pattern = has_pattern
 
-    def knock_walls(self, maze: Maze, random_gen: random.Random) -> None:
+    def knock_walls(self, maze: Maze, random_gen: random.Random,
+                    walls_protected: tuple[int, int]) -> None:
         """Collects all maze cells where walls are:"""
         """ up (N) and left (W) and in bound."""
         """Than randomly carves 10%."""
@@ -88,6 +103,9 @@ class MazeGenerator:
                     dx, dy = DELTA[d]
                     if maze.in_bounds(x + dx, y + dy) and\
                        maze.has_wall(x, y, d):
+                        if (x, y) in walls_protected or\
+                           (x + dx, y + dy) in walls_protected:
+                            continue
                         to_carve.append((x, y, d))
         will_carved = len(to_carve) // 10
         for x, y, d in random_gen.sample(to_carve, will_carved):
@@ -103,6 +121,23 @@ class MazeGenerator:
         start = (0, 0)
         visited = {start}
         stack = [start]
+        if self.has_pattern:
+            if self.width < PATTERN_W + 2 * MARGIN or\
+               self.height < PATTERN_H + 2 * MARGIN:
+                raise ValueError(
+                    f"maze must be at least {PATTERN_W + 2}x"
+                    f"{PATTERN_H + 2} for 42 pattern"
+                    )
+            offset_x = (self.width - PATTERN_W) // 2
+            offset_y = (self.height - PATTERN_H) // 2
+            walls_protected = []
+            for py, line in enumerate(PATTERN):
+                for px, c in enumerate(line):
+                    if c == "X":
+                        walls_protected.append((px + offset_x, py + offset_y))
+            for wall in walls_protected:
+                visited.add(wall)
+            print(len(walls_protected), offset_x, offset_y)
         while stack:
             x, y = stack[-1]
             not_visited = []
@@ -118,5 +153,7 @@ class MazeGenerator:
             else:
                 stack.pop()
         if not self.is_perfect:
-            self.knock_walls(maze, random_gen)
+            self.knock_walls(maze, random_gen, walls_protected)
+        print("visited:", len(visited), "expected:", self.width * self.height)
+
         return maze
