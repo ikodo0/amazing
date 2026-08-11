@@ -24,11 +24,11 @@ app — start app
 [] M2.2 *(orange)*: render Maze, settings screen, show entry/exit points.
 
 ## M3
-[] M3.1 *(blue)*: non-perfect maze generation (randomly knock walls).
+[+] M3.1 *(blue)*: non-perfect maze generation (randomly knock walls).
 
-[] M3.2 *(blue)*: insert 42 walls pattern, error if board too small.
+[+] M3.2 *(blue)*: insert 42 walls pattern, error if board too small.
 
-[] M3.3 *(blue)*: write output in maze.txt.
+[+] M3.3 *(blue)*: write output in maze.txt.
 
 [] M3.4 *(orange)*: menu / GUI, regenerate maze button.
 
