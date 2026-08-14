@@ -1,10 +1,10 @@
 import ctypes
 from mlx import Mlx
-from app.renderer.actions import NavigationCommand, ScreenAction
-from app.renderer.component import DrawCommand, DrawRect, DrawText, DrawTexture
+from app.renderer.actions import NavigationCommand, ScreenAction, ToggleNavigationCommand
+from app.renderer.component import DrawCommand, DrawRect, DrawText, DrawTexture, Component
 from app.renderer.font import TTFFont
 from app.renderer.utils import RGB, Keycode, Rect
-from app.renderer.screen import Screen
+from app.renderer.screen import Screen, ScreenFactory
 from typing import Any
 from time import time
 from typing import Callable
@@ -16,12 +16,15 @@ class Renderer(Mlx):
             height: int = 600,
             width: int = 800,
             title: str = "Application",
-            swap_buffers: Callable = lambda: None
+            swap_buffers: Callable = lambda: None,
+            screen_factory: ScreenFactory | None = None,
     ) -> None:
         super().__init__()
 
         self._mlx = self.mlx_init()
         self._win = self.mlx_new_window(self._mlx, width, height, title)
+
+        self.screen_factory = screen_factory
 
         self._front = self.mlx_new_image(self._mlx, width, height)
         self._front_buffer, _, _, _ = self.mlx_get_data_addr(
@@ -69,18 +72,35 @@ class Renderer(Mlx):
         for s in self._screen_stack:
             for c in s.components:
                 if self._point_in_rect(x, y, c.rect):
-                    if hasattr(c, 'navigation_command') and c.navigation_command:
-                        cmd: NavigationCommand = c.navigation_command
-                        if cmd.action == ScreenAction.PUSH and cmd.screen:
-                            self.push_screen(cmd.screen)
-                        elif cmd.action == ScreenAction.POP:
-                            self.pop_screen()
-                        elif cmd.action == ScreenAction.REPLACE and cmd.screen:
-                            self.pop_screen()
-                            self.push_screen(cmd.screen)
-                        elif cmd.action == ScreenAction.CLEAR:
-                            self.clear_screens()
+                    if (hasattr(c, 'navigation_command')):
+                        self._handle_navigation(
+                            getattr(c, 'navigation_command')
+                        )
                     c.on_click(keycode)
+
+    def _handle_navigation(
+        self,
+        command: list[NavigationCommand | ToggleNavigationCommand] | NavigationCommand | ToggleNavigationCommand
+    ) -> None:
+        if not self.screen_factory:
+            return
+        if isinstance(command, list):
+            for item in command:
+                self._handle_navigation(item)
+            return
+        if isinstance(command, ToggleNavigationCommand):
+            cmd = command.execute()
+        else:
+            cmd = command
+        if cmd.action == ScreenAction.PUSH and cmd.screen_name:
+            self.push_screen(self.screen_factory.get(cmd.screen_name))
+        elif cmd.action == ScreenAction.POP:
+            self.pop_screen()
+        elif cmd.action == ScreenAction.REPLACE and cmd.screen_name:
+            self.pop_screen()
+            self.push_screen(self.screen_factory.get(cmd.screen_name))
+        elif cmd.action == ScreenAction.CLEAR:
+            self.clear_screens()
 
     def _hk_close(self, _param: Any) -> None:
         self.mlx_destroy_image(self._mlx, self._front)
@@ -138,6 +158,10 @@ class Renderer(Mlx):
         self._frame += 1
 
     def show(self) -> None:
+        if self.screen_factory:
+            self._handle_navigation(
+                NavigationCommand(ScreenAction.PUSH, 'default')
+            )
         self.mlx_loop(self._mlx)
 
     def put_pixel(self, x, y, color: RGB):

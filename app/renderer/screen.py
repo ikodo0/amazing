@@ -4,7 +4,7 @@ import sys
 
 class Screen:
     def __init__(self, *comps: Component) -> None:
-        self.components = []
+        self.components: list[Component] = []
         self.components.extend(comps)
 
     def mount(self, component: Component) -> None:
@@ -24,3 +24,14 @@ class Screen:
 
     def on_exit(self) -> None:
         ...
+
+
+class ScreenFactory:
+    def __init__(self):
+        self._screens = {}
+
+    def register(self, name: str, screen: Screen) -> None:
+        self._screens[name] = screen
+
+    def get(self, name: str) -> Screen:
+        return self._screens[name]

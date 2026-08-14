@@ -46,6 +46,10 @@ class Maze:
                 row.append(Cell(x, y))
             self.grid.append(row)
 
+    def __getitem__(self, key: tuple[int, int]):
+        x, y = key
+        return self.grid[y][x]
+
     def in_bounds(self, x: int, y: int) -> bool:
         """Returns bool if inside bounds of maze"""
         return 0 <= x < self.width and 0 <= y < self.height
@@ -142,7 +146,6 @@ class MazeGenerator:
                         walls_protected.append((px + offset_x, py + offset_y))
             for wall in walls_protected:
                 visited.add(wall)
-            print(self.mode)
             # print(len(walls_protected), offset_x, offset_y)
         while stack:
             if self.mode == "dfs":

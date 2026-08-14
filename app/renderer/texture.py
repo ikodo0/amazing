@@ -98,3 +98,12 @@ class Texture:
             index = y * self.width + x
             return self.pixels[index]
         return RGB(0, 0, 0, 0)  # Out of bounds = transparent
+
+
+class MemoryTexture(Texture):
+    def __init__(self, width: int, height: int, pixels: list[int]):
+        # Bypass XPM parsing; just set fields expected by Texture methods
+        self.width = width
+        self.height = height
+        self.pixels = pixels
+        self._scaled_cache = {}

@@ -21,7 +21,7 @@ app — start app
 ## M2
 [+] M2.1 *(blue)*: perfect maze generation (DFS / backtracker).
 
-[] M2.2 *(orange)*: render Maze, settings screen, show entry/exit points.
+[IN PROGRESS] M2.2 *(orange)*: render Maze, settings screen, show entry/exit points.
 
 ## M3
 [+] M3.1 *(blue)*: non-perfect maze generation (randomly knock walls).

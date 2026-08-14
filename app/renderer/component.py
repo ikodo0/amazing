@@ -1,6 +1,6 @@
 from typing import Callable, Protocol
 from dataclasses import dataclass
-from app.renderer.actions import NavigationCommand
+from app.renderer.actions import NavigationCommand, ToggleNavigationCommand
 from app.renderer.font import TTFFont
 from app.renderer.texture import Texture
 from app.renderer.utils import RGB, Keycode, Rect
@@ -73,7 +73,7 @@ class Tile(Component):
         self.visible = True
         if type(texture_or_color) is RGB:
             self.color = texture_or_color
-        elif type(texture_or_color) is Texture:
+        elif isinstance(texture_or_color, Texture):
             self.texture = texture_or_color
         else:
             return
@@ -117,8 +117,12 @@ class Text(Component):
 
 
 class Button(Component):
+    navigation_command: list[NavigationCommand | ToggleNavigationCommand] |\
+          NavigationCommand | ToggleNavigationCommand | None
+
     def __init__(self, rect: Rect, text_or_texture: Text | Texture,
-                 color: RGB, hover_color: RGB | None = None, z: int = 0):
+                 color: RGB | None = None,
+                 hover_color: RGB | None = None, z: int = 0):
         self.rect = rect
         if type(text_or_texture) is Text:
             self.text = text_or_texture
@@ -130,7 +134,6 @@ class Button(Component):
         self.visible = True
         self.z = z
         self.on_click_callback: Callable | None = None
-        self.navigation_command: NavigationCommand | None = None
 
     def render(self, hovered: bool) -> list[DrawCommand]:
         """Render the button and return draw commands."""
@@ -141,7 +144,8 @@ class Button(Component):
 
         bg_color = self.hover_color if hovered else self.color
 
-        commands.append(DrawRect(self.rect, bg_color, z=self.z))
+        if bg_color:
+            commands.append(DrawRect(self.rect, bg_color, z=self.z))
         if hasattr(self, 'text'):
             commands.extend(self.text.render(hovered))
         elif hasattr(self, 'texture'):

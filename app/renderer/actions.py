@@ -1,9 +1,5 @@
-from __future__ import annotations
 from enum import Enum
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from app.renderer.screen import Screen
+from typing import Callable
 
 
 class ScreenAction(Enum):
@@ -19,23 +15,46 @@ class NavigationCommand:
     def __init__(
         self,
         action: ScreenAction,
-        screen: Screen | None = None
+        screen_name: str = "default"
     ) -> None:
         self.action = action
-        self.screen = screen
+        self.screen_name = screen_name
 
     @staticmethod
-    def push(screen: Screen) -> 'NavigationCommand':
-        return NavigationCommand(ScreenAction.PUSH, screen)
+    def push(screen_name: str) -> 'NavigationCommand':
+        return NavigationCommand(ScreenAction.PUSH, screen_name)
 
     @staticmethod
     def pop() -> 'NavigationCommand':
         return NavigationCommand(ScreenAction.POP)
 
     @staticmethod
-    def replace(screen: Screen) -> 'NavigationCommand':
-        return NavigationCommand(ScreenAction.REPLACE, screen)
+    def replace(screen_name: str) -> 'NavigationCommand':
+        return NavigationCommand(ScreenAction.REPLACE, screen_name)
 
     @staticmethod
     def clear() -> 'NavigationCommand':
         return NavigationCommand(ScreenAction.CLEAR)
+
+
+class ToggleNavigationCommand:
+    def __init__(
+        self,
+        screen_name: str = "default"
+    ) -> None:
+        self.screen_name = screen_name
+        self.is_open = False
+        self.on_state_change: Callable | None = None
+
+    def reset(self):
+        self.is_open = False
+
+    def execute(self) -> NavigationCommand:
+        if self.is_open:
+            command = NavigationCommand(ScreenAction.POP)
+        else:
+            command = NavigationCommand(ScreenAction.PUSH, self.screen_name)
+        self.is_open = not self.is_open
+        if self.on_state_change:
+            self.on_state_change(self.is_open)
+        return command
