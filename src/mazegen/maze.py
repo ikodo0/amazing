@@ -84,13 +84,15 @@ class MazeGenerator:
         height: int,
         seed: int | None = None,
         is_perfect: bool = True,
-        has_pattern: bool = True
+        has_pattern: bool = True,
+        mode: str = "dfs"
                 ) -> None:
         self.width = width
         self.height = height
         self.seed = seed
         self.is_perfect = is_perfect
         self.has_pattern = has_pattern
+        self.mode = mode
 
     def knock_walls(self, maze: Maze, random_gen: random.Random,
                     walls_protected: tuple[int, int]) -> None:
@@ -117,6 +119,8 @@ class MazeGenerator:
         """Checks unvisited neightbors, randomly selectes where to move."""
         """If no movement possible, come back and continue."""
         """It appends and pops until stack is empty."""
+        if self.mode not in ("dfs", "dfs_gt"):
+            raise ValueError(f"{self.mode} is not supported.")
         maze = Maze(self.width, self.height)
         random_gen = random.Random(self.seed)
         start = (0, 0)
@@ -138,9 +142,15 @@ class MazeGenerator:
                         walls_protected.append((px + offset_x, py + offset_y))
             for wall in walls_protected:
                 visited.add(wall)
+            print(self.mode)
             # print(len(walls_protected), offset_x, offset_y)
         while stack:
-            x, y = stack[-1]
+            if self.mode == "dfs":
+                x, y = stack[-1]
+            elif self.mode == "dfs_gt":
+                x, y = random_gen.choice(stack)
+            else:
+                raise ValueError(f"gen loop error")
             not_visited = []
             neighbors = maze.neighbors(x, y)
             for nx, ny, d in neighbors:
@@ -152,7 +162,7 @@ class MazeGenerator:
                 visited.add((nx, ny))
                 stack.append((nx, ny))
             else:
-                stack.pop()
+                stack.remove((x, y))
         if not self.is_perfect:
             self.knock_walls(maze, random_gen, walls_protected)
         return maze

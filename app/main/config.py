@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field, field_validator, model_validator
-from typing import Optional, Any
+from typing import Optional, Literal, Any
 
 
 class Config(BaseModel):
@@ -11,6 +11,7 @@ class Config(BaseModel):
     OUTPUT_FILE: str = Field()
     SEED: Optional[int] = Field(default=None)
     PATTERN: Optional[bool] = Field(default=True)
+    MODE: Literal["dfs", "dfs_gt"] = Field(default="dfs")
 
     @field_validator("ENTRY", "EXIT", mode="before")
     @classmethod
