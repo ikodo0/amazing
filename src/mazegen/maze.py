@@ -1,15 +1,16 @@
 import random
 from typing import Iterator
+from collections import deque
+from typing import Any
 
-
-# TODO: change this to an Enum what the fuck??? Makes WORD_DELTA redundant and OPPOSITE is ??????????
-N, S, E, W = 1, 2, 4, 8
+N, E, S, W = 1, 2, 4, 8
 
 WORD_DELTA = {N: "North", 2: "South", 4: "East", 8: "West"}
 DELTA = {N: (0, -1), S: (0, 1), E: (1, 0), W: (-1, 0)}
 OPPOSITE = {N: S, S: N, E: W, W: E}
 
 MOVES = {N: 0, E: 1, S: 2, W: 3}
+LETTER = {N: "N", S: "S", E: "E", W: "W"}
 STEP = {(0, -1): N, (0, 1): S, (1, 0): E, (-1, 0): W}
 
 PATTERN = [
@@ -137,7 +138,7 @@ class MazeGenerator:
                         walls_protected.append((px + offset_x, py + offset_y))
             for wall in walls_protected:
                 visited.add(wall)
-            print(len(walls_protected), offset_x, offset_y)
+            # print(len(walls_protected), offset_x, offset_y)
         while stack:
             x, y = stack[-1]
             not_visited = []
@@ -154,6 +155,61 @@ class MazeGenerator:
                 stack.pop()
         if not self.is_perfect:
             self.knock_walls(maze, random_gen, walls_protected)
-        print("visited:", len(visited), "expected:", self.width * self.height)
-
         return maze
+
+
+def to_text(maze: Maze) -> str:
+    return "\n".join(
+        "".join(f"{c.walls:X}" for c in row)
+        for row in maze.grid
+    ) + "\n"
+
+
+def solve(maze: Maze,
+          start: tuple[int, int],
+          end: tuple[int, int]) -> list[tuple[int, int]]:
+    queue = deque([start])
+    visited = {start}
+    parent = {}
+    while queue:
+        x, y = queue.popleft()
+        if ((x, y) == end):
+            break
+        for nx, ny, d in maze.neighbors(x, y):
+            if maze.has_wall(x, y, d):
+                continue
+            if ((nx, ny) in visited):
+                continue
+            visited.add((nx, ny))
+            parent[(nx, ny)] = (x, y)
+            queue.append((nx, ny))
+    if end not in visited:
+        raise ValueError(f"no path from {start} to {end}")
+    # print(f"parent: {len(parent)},\n\nvisited:
+    # {len(visited)},\n\nqueue: {len(queue)}")
+    current = end
+    solution = []
+    solution = deque()
+    solution.appendleft(current)
+    while True:
+        current = parent[current]
+        solution.appendleft(current)
+        if current == start:
+            break
+    return solution
+
+
+def txt_generate(config: Any, m: Maze,
+                 s: list[tuple[int, int]]) -> None:
+    sx, sy = config.ENTRY
+    ex, ey = config.EXIT
+    with open(config.OUTPUT_FILE, "w") as f:
+        f.write(f"{to_text(m)}")
+        f.write(f"\n{sx},{sy}\n{ex},{ey}")
+        letters_arr = []
+        for i in range(len(s) - 1):
+            dx = s[i + 1][0] - s[i][0]
+            dy = s[i + 1][1] - s[i][1]
+            letters_arr.append(LETTER[STEP[dx, dy]])
+        letters = "".join(letters_arr)
+        f.write(f"\n\n{letters}")

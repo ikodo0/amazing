@@ -33,18 +33,18 @@ app — start app
 [] M3.4 *(orange)*: menu / GUI, regenerate maze button.
 
 ## M4
-[] M4.1 *(blue)*: generate Solution (BFS), write output in maze.txt
+[+] M4.1 *(blue)*: generate Solution (BFS), write output in maze.txt
 
-[] M4.2 *(blue)*: test if valid according to subject.
+[+] M4.2 *(blue)*: test if valid according to subject.
 
 [] M4.3 *(orange)*: render Solution from solution.txt.
 
 [] M4.4 *(orange)*: toggle button, show Solution / hide Solution
 
 ## M5
-[] M5.1 *(blue)*: MazeGenerator as importable module.
+[+] M5.1 *(blue)*: MazeGenerator as importable module.
 
-[] M5.2 *(blue)*:build mazegen-*whl / .tar.gz.
+[+] M5.2 *(blue)*:build mazegen-*whl / .tar.gz.
 
 [] M5.3 *(both)*: README.md.
 

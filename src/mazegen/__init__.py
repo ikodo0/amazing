@@ -1,12 +1,13 @@
-from .maze import MazeGenerator, Maze, Cell, N, S, E, W
+from .maze import MazeGenerator, Maze, Cell, \
+                  solve, STEP, to_text, txt_generate
 
 
 __all__ = [
     "MazeGenerator",
     "Maze",
     "Cell",
-    "N",
-    "S",
-    "E",
-    "W"
+    "solve",
+    "STEP",
+    "to_text",
+    "txt_generate"
 ]
