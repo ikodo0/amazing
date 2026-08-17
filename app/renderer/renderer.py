@@ -75,7 +75,11 @@ class Renderer(Mlx):
             for c in s.components:
                 if self._point_in_rect(x, y, c.rect) and \
                    keycode == Keycode.LEFT:
-                    c.on_click(keycode)
+                    try:
+                        c.on_click(keycode)
+                    except Exception as e:
+                        print(e)
+                        continue
                     if (hasattr(c, 'navigation_command')):
                         self._handle_navigation(
                             getattr(c, 'navigation_command')
@@ -170,6 +174,12 @@ class Renderer(Mlx):
                 NavigationCommand(ScreenAction.PUSH, 'default')
             )
         self.mlx_loop(self._mlx)
+
+    def close(self) -> None:
+        self.mlx_destroy_image(self._mlx, self._front_buffer)
+        self.mlx_destroy_image(self._mlx, self._front_buffer)
+        self.mlx_destroy_window(self._mlx, self._win)
+        self.mlx_release(self._mlx)
 
     def put_pixel(self, x: int, y: int, color: RGB) -> None:
         if 0 <= x < self._width and 0 <= y < self._height:
@@ -276,7 +286,10 @@ class Renderer(Mlx):
     def push_screen(self, screen: Screen) -> None:
         if screen in self._screen_stack:
             return
-        screen.on_mount()
+        try:
+            screen.on_mount()
+        except Exception:
+            return
         self._screen_stack.append(screen)
 
     def pop_screen(self) -> None:

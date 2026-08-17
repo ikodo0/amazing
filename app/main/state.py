@@ -8,7 +8,7 @@ from app.renderer.actions import ToggleNavigationCommand
 from app.renderer.font import TTFFont
 from app.renderer.texture import Texture
 from app.renderer.utils import RGB
-from mazegen.maze import MazeGenerator
+from mazegen.maze import MazeGenerator, solve
 
 
 class AssetManager:
@@ -51,6 +51,7 @@ class SharedState():
             self.config.SEED, self.config.PERFECT,
             self.config.PATTERN or True, self.config.MODE)
         self.maze = self.maze_gen.generate()
+        self.solution = solve(self.maze, self.config.ENTRY, self.config.EXIT)
         self.color = get_next_color()
 
         self.wall_texture = self.assets.get_texture('wall')

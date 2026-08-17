@@ -60,7 +60,7 @@ class MazeScreen(Screen):
         ])
         self.solution_tiles = self.solution_path(self.config.ENTRY,
                                                  self.config.EXIT)
-        txt_generate(self.config, self.maze, self.solution)
+        txt_generate(self.config, self.maze, self.state.solution)
 
     def on_enter(self) -> None:
         if len(self.solution_tiles) > 0:
@@ -132,7 +132,11 @@ class MazeScreen(Screen):
         self,
         start: tuple[int, int], end: tuple[int, int]
     ) -> list[Tile]:
-        self.solution = solve(self.state.maze, start, end)
+        try:
+            self.solution = solve(self.state.maze, start, end)
+        except Exception as e:
+            print(f"Failed to solve maze: {e}")
+            return []
 
         line_width = self.tile_size // 4
 
