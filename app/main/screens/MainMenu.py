@@ -6,6 +6,7 @@ from app.renderer.component import Button, Text
 from app.renderer.screen import Screen
 from app.renderer.utils import RGB, Keycode, Rect
 from app.main.state import SharedState
+from mazegen.maze import MazeGenerator
 
 
 class MainMenuScreen(Screen):
@@ -67,6 +68,11 @@ class MainMenuScreen(Screen):
         if keycode != Keycode.LEFT:
             return
         self.state.config = read_config(os.environ.get("CONFIG", "config.txt"))
+        config = self.state.config
+        self.state.maze_gen = MazeGenerator(
+            config.WIDTH, config.HEIGHT,
+            config.SEED, config.PERFECT,
+            config.PATTERN or True, config.MODE)
 
     def on_exit(self) -> None:
         self.title.color = next(self.state.color)

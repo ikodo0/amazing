@@ -11,10 +11,10 @@ $(VENV):
 	python3 -m venv $(VENV)
 
 run:
-	CONFIG=config.txt $(PY)/python3 a_maze_ing.py
+	CONFIG=config.txt $(PY)/python3 a_maze_ing.py config.txt
 
 debug:
-	CONFIG=config.txt $(PY)/python3 -m pdb a_maze_ing.py
+	CONFIG=config.txt $(PY)/python3 -m pdb a_maze_ing.py config.txt
 
 build:
 	$(PY)/python3 -m build
