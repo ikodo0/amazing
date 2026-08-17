@@ -1,20 +1,14 @@
 VENV := .venv
 PY   := $(VENV)/bin
 
-install: $(VENV) build-mlx
+install: build-mlx $(VENV)
 	$(PY)/pip install --upgrade pip
 	$(PY)/pip install -r requirements.txt
 	$(PY)/pip install -e .
+	$(PY)/pip install ./mlx-*-py3-none-any.whl
 
 $(VENV):
 	python3 -m venv $(VENV)
-
-build-mlx: mlx_CLXV
-	cd mlx_CLXV && make
-	$(PY)/pip install ./mlx_CLXV/mlx*.whl
-
-mlx_CLXV:
-	git clone git@github.com:42school/mlx_CLXV.git
 
 run:
 	CONFIG=config.txt $(PY)/python3 a_maze_ing.py
