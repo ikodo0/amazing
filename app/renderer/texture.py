@@ -23,7 +23,7 @@ class Texture:
         chars_per_pixel = int(header[3])
 
         # Build color map from color definitions
-        color_map = {}
+        color_map: dict[str, RGB] = {}
         for i in range(1, num_colors + 1):
             self._parse_color_line(strings[i], chars_per_pixel, color_map)
 
@@ -34,8 +34,7 @@ class Texture:
                 key = pixel_line[j:j + chars_per_pixel]
                 color = color_map.get(key, RGB(0, 0, 0, 0))
                 # Pack as 0xAARRGGBB
-                packed = (color.a << 24) | (color.r << 16) | (color.g << 8) | color.b
-                self.pixels.append(packed)
+                self.pixels.append(color.to_int())
 
     def _extract_strings(self, content: str) -> list[str]:
         """Extract all quoted strings from XPM file in order."""
@@ -54,7 +53,8 @@ class Texture:
 
         return strings
 
-    def _parse_color_line(self, line: str, chars_per_pixel: int, color_map: dict):
+    def _parse_color_line(self, line: str,
+                          chars_per_pixel: int, color_map: dict):
         """Parse a single color definition (e.g., "  c #563923")."""
         stripped = line.lstrip()
         if not stripped:

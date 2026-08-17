@@ -1,7 +1,9 @@
 import ctypes
 from mlx import Mlx
-from app.renderer.actions import NavigationCommand, ScreenAction, ToggleNavigationCommand
-from app.renderer.component import DrawCommand, DrawRect, DrawText, DrawTexture, Component
+from app.renderer.actions import NavigationCommand, ScreenAction, \
+    ToggleNavigationCommand
+from app.renderer.component import DrawCommand, DrawRect, DrawText, \
+    DrawTexture
 from app.renderer.font import TTFFont
 from app.renderer.utils import RGB, Keycode, Rect
 from app.renderer.screen import Screen, ScreenFactory
