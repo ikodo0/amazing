@@ -79,7 +79,7 @@ class Renderer(Mlx):
                     if (hasattr(c, 'navigation_command')):
                         self._handle_navigation(
                             getattr(c, 'navigation_command')
-                        )           
+                        )
 
     def _handle_navigation(
         self,
