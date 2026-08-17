@@ -66,6 +66,7 @@ class MazeScreen(Screen):
         ])
 
     def on_mount(self) -> None:
+        self.config = self.state.config
         self.maze = self.state.maze
         self.components.clear()
         self.components.extend([
@@ -89,8 +90,7 @@ class MazeScreen(Screen):
 
         out_pixels = [0] * (WIDTH * HEIGHT)
 
-        wall_texture = self.assets.get_texture('wall')
-        wall_texture.set_color_offset(next(color))
+        wall_texture = self.state.wall_texture
 
         def blit_wall_tile(x0: int, y0: int):
             # dst_x0/dst_y0 are in baked pixel coordinates (top-left)
@@ -183,6 +183,6 @@ class MazeScreen(Screen):
                     line_width
                 )
 
-            tiles.append(Tile(connector_rect, RGB(255, 0, 0, 200)))
+            tiles.append(Tile(connector_rect, RGB(255, 0, 0)))
 
         return tiles

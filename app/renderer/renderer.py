@@ -75,11 +75,11 @@ class Renderer(Mlx):
             for c in s.components:
                 if self._point_in_rect(x, y, c.rect) and \
                    keycode == Keycode.LEFT:
+                    c.on_click(keycode)
                     if (hasattr(c, 'navigation_command')):
                         self._handle_navigation(
                             getattr(c, 'navigation_command')
-                        )
-                    c.on_click(keycode)
+                        )           
 
     def _handle_navigation(
         self,

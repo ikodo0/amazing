@@ -6,7 +6,7 @@ class Texture:
                  color_offset: RGB | tuple[int, int, int] | None = None):
         self.width = 0
         self.height = 0
-        self.pixels = []
+        self.pixels: list[int] = []
         self.xpm_path = xpm_path  # Store for re-parsing if offset changes
         self.color_offset = self._normalize_offset(color_offset)
         self._parse_xpm(xpm_path)
@@ -127,12 +127,12 @@ class Texture:
             self._scaled_cache[cache_key] = scaled
         return self._scaled_cache[cache_key]
 
-    def get_pixel(self, x: int, y: int) -> RGB:
+    def get_pixel(self, x: int, y: int) -> int:
         """Get the color at the given texture coordinates."""
         if 0 <= x < self.width and 0 <= y < self.height:
             index = y * self.width + x
             return self.pixels[index]
-        return RGB(0, 0, 0, 0)  # Out of bounds = transparent
+        return 0  # Out of bounds = transparent
 
 
 class MemoryTexture(Texture):

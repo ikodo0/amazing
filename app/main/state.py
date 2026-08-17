@@ -1,3 +1,5 @@
+import colorsys
+from itertools import count
 import os
 
 from app.main.config import read_config
@@ -27,6 +29,15 @@ class AssetManager:
         return self.textures[name]
 
 
+def get_next_color(speed=0.03):
+    t = 0.0
+    for _ in count():
+        hue = (t % 1.0)
+        r, g, b = colorsys.hsv_to_rgb(hue, 1.0, 1.0)
+        yield RGB(int(r * 255), int(g * 255), int(b * 255))
+        t += speed
+
+
 class SharedState():
     def __init__(self):
         self.assets = AssetManager()
@@ -39,8 +50,9 @@ class SharedState():
             self.config.SEED, self.config.PERFECT,
             self.config.PATTERN or True, self.config.MODE)
         self.maze = self.maze_gen.generate()
+        self.color = get_next_color()
 
-        self.wall_color = RGB(255, 255, 255)
+        self.wall_texture = self.assets.get_texture('wall')
 
 
 __all__ = [

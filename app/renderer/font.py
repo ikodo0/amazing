@@ -28,7 +28,7 @@ class TTFFont:
         self.face = freetype.Face(font_path)
         self.size = size
         self.set_size(size)
-        self._glyph_cache = {}
+        self._glyph_cache: dict[str, Glyph] = {}
 
     def set_size(self, size: int):
         """Set the font size in pixels."""
