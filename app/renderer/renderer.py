@@ -275,6 +275,7 @@ class Renderer(Mlx):
     def push_screen(self, screen: Screen) -> None:
         if screen in self._screen_stack:
             return
+        screen.on_mount()
         self._screen_stack.append(screen)
 
     def pop_screen(self) -> None:

@@ -18,6 +18,9 @@ def get_next_color(speed=0.03):
         t += speed
 
 
+color = get_next_color()
+
+
 class BurgerButton(Button):
     def __init__(self, rect: Rect, textures: list[Texture]):
         super().__init__(rect, textures[0])
@@ -36,17 +39,16 @@ class MazeScreen(Screen):
         self.tile_size = 16
         self.assets = state.assets
         self.config = state.config
-        config = state.config
         self.color = get_next_color()
 
         self.state = state
         self.maze = self.state.maze
 
-        self.offset_x = (config.WINDOW_WIDTH // 2) - \
+        self.offset_x = (self.config.WINDOW_WIDTH // 2) - \
             ((self.state.maze.width * 2 + 3) * 16) // 2
         self.offset_y = 64
 
-        self.solution = self.solution_path(config.ENTRY, config.EXIT)
+        self.solution = self.solution_path(self.config.ENTRY, self.config.EXIT)
 
         self.menu_btn = BurgerButton(
             Rect(0, 0, 64, 64),
@@ -62,6 +64,15 @@ class MazeScreen(Screen):
             self.menu_btn,
             self.bake_maze_walls()
         ])
+
+    def on_mount(self) -> None:
+        self.maze = self.state.maze
+        self.components.clear()
+        self.components.extend([
+            self.menu_btn,
+            self.bake_maze_walls()
+        ])
+        self.solution = self.solution_path(self.config.ENTRY, self.config.EXIT)
 
     def on_enter(self) -> None:
         if len(self.solution) > 0:
@@ -79,6 +90,7 @@ class MazeScreen(Screen):
         out_pixels = [0] * (WIDTH * HEIGHT)
 
         wall_texture = self.assets.get_texture('wall')
+        wall_texture.set_color_offset(next(color))
 
         def blit_wall_tile(x0: int, y0: int):
             # dst_x0/dst_y0 are in baked pixel coordinates (top-left)

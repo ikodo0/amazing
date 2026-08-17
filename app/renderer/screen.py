@@ -19,6 +19,9 @@ class Screen:
                   f"{e}",
                   file=sys.stderr)
 
+    def on_mount(self) -> None:
+        ...
+
     def on_enter(self) -> None:
         ...
 
