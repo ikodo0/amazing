@@ -25,6 +25,8 @@ class Config(BaseModel):
         def isoutofbound(obj: tuple[int, int]) -> bool:
             x, y = obj
             return 0 <= x < self.WIDTH and 0 <= y < self.HEIGHT
+        if self.ENTRY == self.EXIT:
+            raise ValueError("ENTRY and EXIT must differ.")
         if not isoutofbound(self.ENTRY):
             raise ValueError("Entry point is out of bound.")
         if not isoutofbound(self.EXIT):

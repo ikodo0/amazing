@@ -2,6 +2,7 @@ import random
 from typing import Iterator
 from collections import deque
 from typing import Any
+import sys
 
 N, E, S, W = 1, 2, 4, 8
 
@@ -24,6 +25,8 @@ PATTERN = [
 PATTERN_W = len(PATTERN[0])
 PATTERN_H = len(PATTERN)
 MARGIN = 1
+MIN_W = PATTERN_W + 2 * MARGIN
+MIN_H = PATTERN_H + 2 * MARGIN
 
 
 class Cell:
@@ -127,7 +130,7 @@ class MazeGenerator:
         self.mode = mode
 
     def knock_walls(self, maze: Maze, random_gen: random.Random,
-                    walls_protected: tuple[int, int]) -> None:
+                    walls_protected: set[tuple[int, int]]) -> None:
         """Collects all maze cells where walls are:"""
         """ up (N) and left (W) and in bound."""
         """Than randomly carves 10%."""
@@ -145,6 +148,8 @@ class MazeGenerator:
         will_carved = len(to_carve) // 10
         for x, y, d in random_gen.sample(to_carve, will_carved):
             maze.carve(x, y, d)
+            if creates_open_area(maze, x, y):
+                maze.uncarve(x, y, d)
 
     def generate(self) -> Maze:
         """Randomly carves a perfect maze using DFS."""
@@ -158,30 +163,28 @@ class MazeGenerator:
         start = (0, 0)
         visited = {start}
         stack = [start]
+        walls_protected: set[tuple[int, int]] = set()
         if self.has_pattern:
-            if self.width < PATTERN_W + 2 * MARGIN or\
-               self.height < PATTERN_H + 2 * MARGIN:
-                raise ValueError(
-                    f"maze must be at least {PATTERN_W + 2}x"
-                    f"{PATTERN_H + 2} for 42 pattern"
-                    )
-            offset_x = (self.width - PATTERN_W) // 2
-            offset_y = (self.height - PATTERN_H) // 2
-            walls_protected = []
-            for py, line in enumerate(PATTERN):
-                for px, c in enumerate(line):
-                    if c == "X":
-                        walls_protected.append((px + offset_x, py + offset_y))
-            for wall in walls_protected:
-                visited.add(wall)
+            if self.width < MIN_W or self.height < MIN_H:
+                print(
+                    f"maze must be at least {MIN_W}x"
+                    f"{MIN_H} for 42 pattern", file=sys.stderr
+                )
+            else:
+                offset_x = (self.width - PATTERN_W) // 2
+                offset_y = (self.height - PATTERN_H) // 2
+                for py, line in enumerate(PATTERN):
+                    for px, c in enumerate(line):
+                        if c == "X":
+                            walls_protected.add((px + offset_x, py + offset_y))
+                for wall in walls_protected:
+                    visited.add(wall)
             # print(len(walls_protected), offset_x, offset_y)
         while stack:
             if self.mode == "dfs":
                 x, y = stack[-1]
-            elif self.mode == "dfs_gt":
+            if self.mode == "dfs_gt":
                 x, y = random_gen.choice(stack)
-            else:
-                raise ValueError(f"gen loop error")
             not_visited = []
             neighbors = maze.neighbors(x, y)
             for nx, ny, d in neighbors:
@@ -196,8 +199,6 @@ class MazeGenerator:
                 stack.remove((x, y))
         if not self.is_perfect:
             self.knock_walls(maze, random_gen, walls_protected)
-            if creates_open_area(maze, x, y):
-                maze.uncarve(x, y, d)
         return maze
 
 
@@ -214,6 +215,8 @@ def solve(maze: Maze,
     queue = deque([start])
     visited = {start}
     parent = {}
+    if start == end:
+        raise ValueError(f"start and end values must differ.")
     while queue:
         x, y = queue.popleft()
         if ((x, y) == end):

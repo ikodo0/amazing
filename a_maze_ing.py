@@ -20,7 +20,7 @@ def main() -> None:
             # print(sum(1 for row in m.grid for c in row if c.walls != 15))
             solution = solve(m, config.ENTRY, config.EXIT)
             txt_generate(config, m, solution)
-            print(f"Open areas: {find_open_areas(m)}")
+            # print(f"Open areas: {find_open_areas(m)}")
             # m.carve(1, 1, N)
             # print(maze.cell(1,1).walls, maze.cell(1,0).walls)
             # print(maze.has_wall(1,1,W))
