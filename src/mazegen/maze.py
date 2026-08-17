@@ -86,6 +86,16 @@ class Maze:
         self.cell(x, y).walls &= ~ d
         self.cell(nx, ny).walls &= ~ OPPOSITE[d]
 
+    def uncarve(self, x: int, y: int, d: int) -> None:
+        """Takes coords and direction of Cell."""
+        """Uncarves 'd' wall on current cell in opposite on 'd' Cell."""
+        dx, dy = DELTA[d]
+        nx, ny = x + dx, y + dy
+        if not self.in_bounds(nx, ny):
+            raise ValueError(f"{WORD_DELTA[d]} from ({x}, {y}) is out bound")
+        self.cell(x, y).walls |= d
+        self.cell(nx, ny).walls |= OPPOSITE[d]
+
     def has_wall(self, x: int, y: int, d: int) -> bool:
         """Returns bool if has Cell on direction."""
         return bool(self.cell(x, y).walls & d)
@@ -186,6 +196,8 @@ class MazeGenerator:
                 stack.remove((x, y))
         if not self.is_perfect:
             self.knock_walls(maze, random_gen, walls_protected)
+            if creates_open_area(maze, x, y):
+                maze.uncarve(x, y, d)
         return maze
 
 
@@ -244,3 +256,36 @@ def txt_generate(config: Any, m: Maze,
             letters_arr.append(LETTER[STEP[dx, dy]])
         letters = "".join(letters_arr)
         f.write(f"\n\n{letters}")
+
+
+def is_open_block(maze: Maze, x: int, y: int) -> bool:
+    for dy in range(3):
+        for dx in range(2):
+            if maze.has_wall(x + dx, y + dy, E):
+                return False
+    for dy in range(2):
+        for dx in range(3):
+            if maze.has_wall(x + dx, y + dy, S):
+                return False
+    return True
+
+
+def find_open_areas(maze: Maze) -> list[tuple[int, int]]:
+    """Return top-left corners of any fully open 3x3 block."""
+    bad = []
+    for y in range(maze.height - 2):
+        for x in range(maze.width - 2):
+            if is_open_block(maze, x, y):
+                bad.append((x, y))
+    return bad
+
+
+def creates_open_area(maze: Maze, x: int, y: int) -> bool:
+    """True if any 3x3 block touching (x, y) is fully open."""
+    for by in range(y - 2, y + 2):
+        for bx in range(x - 2, x + 2):
+            if maze.in_bounds(bx, by) and maze.in_bounds(bx + 2, by + 2):
+                if is_open_block(maze, bx, by):
+                    return True
+    return False
+
