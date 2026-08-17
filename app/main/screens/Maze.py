@@ -2,7 +2,7 @@ from app.renderer.component import Button, Tile
 from app.renderer.screen import Screen
 from app.renderer.texture import MemoryTexture, Texture
 from app.renderer.utils import RGB, Rect
-from mazegen.maze import N, E, S, W, solve
+from mazegen.maze import N, E, S, W, solve, txt_generate
 from app.main.state import SharedState
 
 
@@ -32,7 +32,8 @@ class MazeScreen(Screen):
             ((self.state.maze.width * 2 + 3) * 16) // 2
         self.offset_y = 64
 
-        self.solution = self.solution_path(self.config.ENTRY, self.config.EXIT)
+        self.solution_tiles = self.solution_path(self.config.ENTRY,
+                                                 self.config.EXIT)
 
         self.menu_btn = BurgerButton(
             Rect(0, 0, 64, 64),
@@ -57,11 +58,13 @@ class MazeScreen(Screen):
             self.menu_btn,
             self.bake_maze_walls()
         ])
-        self.solution = self.solution_path(self.config.ENTRY, self.config.EXIT)
+        self.solution_tiles = self.solution_path(self.config.ENTRY,
+                                                 self.config.EXIT)
+        txt_generate(self.config, self.maze, self.solution)
 
     def on_enter(self) -> None:
-        if len(self.solution) > 0:
-            tile = self.solution.pop(0)
+        if len(self.solution_tiles) > 0:
+            tile = self.solution_tiles.pop(0)
             self.components.append(tile)
         return super().on_enter()
 
@@ -129,7 +132,7 @@ class MazeScreen(Screen):
         self,
         start: tuple[int, int], end: tuple[int, int]
     ) -> list[Tile]:
-        path_cells = solve(self.state.maze, start, end)
+        self.solution = solve(self.state.maze, start, end)
 
         line_width = self.tile_size // 4
 
@@ -146,9 +149,9 @@ class MazeScreen(Screen):
 
         tiles: list[Tile] = []
 
-        for i in range(len(path_cells) - 1):
-            x1, y1 = cell_center(*path_cells[i])
-            x2, y2 = cell_center(*path_cells[i + 1])
+        for i in range(len(self.solution) - 1):
+            x1, y1 = cell_center(*self.solution[i])
+            x2, y2 = cell_center(*self.solution[i + 1])
 
             # Vertical movement (same x)
             if x1 == x2:
