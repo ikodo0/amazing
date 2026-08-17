@@ -121,9 +121,9 @@ class MazeScreen(Screen):
                     removed.add(idx(1, 0))
                 if not (cell.walls & S):
                     removed.add(idx(1, 2))
-                if (cx > 0) and not (cell.walls & W):
+                if not (cell.walls & W):
                     removed.add(idx(0, 1))
-                if (cy < self.state.maze.width) and not (cell.walls & E):
+                if not (cell.walls & E):
                     removed.add(idx(2, 1))
 
                 for dy in range(3):

@@ -3,9 +3,10 @@ from itertools import count
 import random
 
 from app.renderer import TTFFont, Texture, RGB, Button, Rect, Text, \
-      Renderer, Screen, Keycode, Tile, Component, MemoryTexture
+      Renderer, Screen, Tile, Component, MemoryTexture
 from app.renderer.actions import NavigationCommand, ScreenAction, \
     ToggleNavigationCommand
+from app.renderer.utils import Keycode
 from app.renderer.screen import ScreenFactory
 from mazegen import MazeGenerator, N, E, S, W
 from mazegen.maze import Maze, solve
@@ -205,8 +206,6 @@ def bake_maze_walls_texture(
     # Output pixel buffer as packed 0xAARRGGBB ints
     out_pixels = [0] * (W * H)
 
-    # Helper: write a tile-sized solid/texture-sampled block into out_pixels.
-    # We’ll sample from wall_texture so the baked result matches your wall texture styling.
     def blit_wall_tile(dst_x0: int, dst_y0: int):
         # dst_x0/dst_y0 are in baked pixel coordinates (top-left)
         for py in range(tile_size):
@@ -214,8 +213,10 @@ def bake_maze_walls_texture(
                 # Sample wall texture proportionally to the tile
                 tex_x = (px * wall_texture.width) // tile_size
                 tex_y = (py * wall_texture.height) // tile_size
-                packed = wall_texture.pixels[tex_y * wall_texture.width + tex_x]
-                out_pixels[(dst_y0 + py) * W + (dst_x0 + px)] = packed
+                packed = wall_texture.pixels[
+                    tex_y * wall_texture.width + tex_x
+                ]
+                out_pixels[(dst_y0 + py) * W + (dst_x0 + px)] = packed.to_int()
 
     def idx(dx, dy):  # index into 3x3
         return dy * 3 + dx
@@ -240,9 +241,6 @@ def bake_maze_walls_texture(
             if (cy < maze.width) and not (cell.walls & E):
                 removed.add(idx(2, 1))
 
-            # Optionally ignore corners entirely (comment out if you want corner tiles):
-            # removed.update({idx(0,0), idx(2,0), idx(0,2), idx(2,2)})
-
             for dy in range(3):
                 for dx in range(3):
                     if idx(dx, dy) in removed:
@@ -253,7 +251,9 @@ def bake_maze_walls_texture(
                     py0 = (grid_y + dy) * tile_size
                     blit_wall_tile(px0, py0)
 
-    return Tile(Rect(offset_x, offset_y, W, H), MemoryTexture(W, H, out_pixels))
+    return Tile(
+        Rect(offset_x, offset_y, W, H), 
+        MemoryTexture(W, H, out_pixels))
 
 
 def render_solution_path(
