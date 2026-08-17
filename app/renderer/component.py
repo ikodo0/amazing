@@ -44,7 +44,7 @@ class Component(Protocol):
     def render(self, hovered: bool) -> list[DrawCommand]:
         ...
 
-    def on_click(self, key: Keycode):
+    def on_click(self, key: Keycode) -> None:
         ...
 
 
@@ -62,7 +62,7 @@ class RectComponent(Component):
             DrawRect(self.rect, self.color, self.z)
         ]
 
-    def on_click(self, key: Keycode):
+    def on_click(self, key: Keycode) -> None:
         ...
 
 
@@ -84,7 +84,7 @@ class Tile(Component):
             return [DrawRect(self.rect, self.color)]
         return [DrawTexture(self.rect, self.texture)]
 
-    def on_click(self, key: Keycode):
+    def on_click(self, key: Keycode) -> None:
         pass
 
 
@@ -98,21 +98,22 @@ class Text(Component):
         self.visible = True
         self.z = z
 
-    def render(self, hovered: bool, centered=False) -> list[DrawCommand]:
+    def render(self,
+               hovered: bool, centered: bool = False) -> list[DrawCommand]:
         """Render the text and return draw commands."""
         if not self.visible:
             return []
         return [DrawText(self.text, self.rect,
                          self.color, self.font, z=self.z)]
 
-    def center(self):
+    def center(self) -> None:
         """Calculate and return a rect with text centered within self.rect."""
         text_width, text_height = self.font.measure_text(self.text)
         center_x = self.rect.x + (self.rect.w - text_width) // 2
         center_y = self.rect.y + (self.rect.h - text_height) // 2
         self.rect = Rect(center_x, center_y, text_width, text_height)
 
-    def on_click(self, key: Keycode):
+    def on_click(self, key: Keycode) -> None:
         ...
 
 
@@ -122,7 +123,7 @@ class Button(Component):
 
     def __init__(self, rect: Rect, text_or_texture: Text | Texture,
                  color: RGB | None = None,
-                 hover_color: RGB | None = None, z: int = 0):
+                 hover_color: RGB | None = None, z: int = 0) -> None:
         self.rect = rect
         if type(text_or_texture) is Text:
             self.text = text_or_texture
@@ -153,6 +154,6 @@ class Button(Component):
 
         return commands
 
-    def on_click(self, key: Keycode):
+    def on_click(self, key: Keycode) -> None:
         if self.on_click_callback is not None:
             self.on_click_callback(key)

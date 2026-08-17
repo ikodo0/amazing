@@ -64,7 +64,7 @@ class MainMenuScreen(Screen):
     #     self.state.maze_gen.seed = random.randint(0, 2**32 - 1)
     #     self.state.maze = self.state.maze_gen.generate()
 
-    def reload_btn_click(self, keycode: Keycode):
+    def reload_btn_click(self, keycode: Keycode) -> None:
         if keycode != Keycode.LEFT:
             return
         self.state.config = read_config(os.environ.get("CONFIG", "config.txt"))

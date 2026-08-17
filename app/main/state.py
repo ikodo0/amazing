@@ -1,6 +1,7 @@
 import colorsys
 from itertools import count
 import os
+from typing import Generator
 
 from app.main.config import read_config
 from app.renderer.actions import ToggleNavigationCommand
@@ -11,7 +12,7 @@ from mazegen.maze import MazeGenerator
 
 
 class AssetManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self.fonts = {
             'regular': TTFFont("./assets/fonts/ComicRelief-Regular.ttf", 30),
             'minecraft': TTFFont("./assets/fonts/Minecraft.ttf", 35),
@@ -29,7 +30,7 @@ class AssetManager:
         return self.textures[name]
 
 
-def get_next_color(speed=0.03):
+def get_next_color(speed: float = 0.03) -> Generator[RGB, None, None]:
     t = 0.0
     for _ in count():
         hue = (t % 1.0)
@@ -39,7 +40,7 @@ def get_next_color(speed=0.03):
 
 
 class SharedState():
-    def __init__(self):
+    def __init__(self) -> None:
         self.assets = AssetManager()
         self.config = read_config(os.environ.get('CONFIG', 'config.txt'))
 

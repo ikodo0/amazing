@@ -30,8 +30,8 @@ class Screen:
 
 
 class ScreenFactory:
-    def __init__(self):
-        self._screens = {}
+    def __init__(self) -> None:
+        self._screens: dict[str, Screen] = {}
 
     def register(self, name: str, screen: Screen) -> None:
         self._screens[name] = screen

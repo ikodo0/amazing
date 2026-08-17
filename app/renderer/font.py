@@ -30,7 +30,7 @@ class TTFFont:
         self.set_size(size)
         self._glyph_cache: dict[str, Glyph] = {}
 
-    def set_size(self, size: int):
+    def set_size(self, size: int) -> None:
         """Set the font size in pixels."""
         self.size = size
         self.face.set_char_size(size * 64)  # freetype uses 1/64 pixel units
@@ -95,6 +95,6 @@ class TTFFont:
 
         return (total_width, height)
 
-    def clear_cache(self):
+    def clear_cache(self) -> None:
         """Clear the glyph cache."""
         self._glyph_cache.clear()

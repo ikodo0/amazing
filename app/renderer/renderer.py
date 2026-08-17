@@ -7,7 +7,7 @@ from app.renderer.component import DrawCommand, DrawRect, DrawText, \
 from app.renderer.font import TTFFont
 from app.renderer.utils import RGB, Keycode, Rect
 from app.renderer.screen import Screen, ScreenFactory
-from typing import Any
+from typing import Any, cast
 from time import time
 from typing import Callable
 
@@ -69,7 +69,7 @@ class Renderer(Mlx):
     def width(self) -> int:
         return self._width
 
-    def _hk_mouse(self, code: int, x, y, _param: Any) -> None:
+    def _hk_mouse(self, code: int, x: int, y: int, _param: Any) -> None:
         keycode = Keycode(code)
         for s in self._screen_stack:
             for c in s.components:
@@ -117,7 +117,7 @@ class Renderer(Mlx):
             return
 
         ctypes.memset(
-            ctypes.addressof(self._back_buffer.obj),  # type: ignore
+            ctypes.addressof(cast(Any, self._back_buffer.obj)),
             0, len(self._back_buffer) * 4
         )
 
@@ -171,14 +171,15 @@ class Renderer(Mlx):
             )
         self.mlx_loop(self._mlx)
 
-    def put_pixel(self, x, y, color: RGB):
+    def put_pixel(self, x: int, y: int, color: RGB) -> None:
         if 0 <= x < self._width and 0 <= y < self._height:
             offset = y * self._line_sz + x * 4
             self._back_buffer[offset:offset + 4] = (
                 int(color)
             ).to_bytes(4, byteorder='little')
 
-    def put_pixel_blend(self, x: int, y: int, color: RGB, alpha_u8: int):
+    def put_pixel_blend(self,
+                        x: int, y: int, color: RGB, alpha_u8: int) -> None:
         if not (0 <= x < self._width and 0 <= y < self._height):
             return
 
@@ -218,7 +219,7 @@ class Renderer(Mlx):
                                                             byteorder="little")
 
     def draw_glyph(self, ch: str, x: int, baseline: int, color: RGB,
-                   font: TTFFont, z: int = 0):
+                   font: TTFFont, z: int = 0) -> None:
         g = font.get_glyph(ch)
         if g.w == 0 or g.h == 0:
             return
@@ -234,7 +235,7 @@ class Renderer(Mlx):
                     self.put_pixel_blend(x0 + cx, y0 + cy, color, a)
                 idx += 1
 
-    def draw_text(self, cmd: DrawText):
+    def draw_text(self, cmd: DrawText) -> None:
         pen_x = cmd.rect.x
         for ch in cmd.text:
             self.draw_glyph(ch, pen_x,
@@ -249,7 +250,7 @@ class Renderer(Mlx):
                 self.put_pixel_blend(cmd.rect.x + col, cmd.rect.y + row,
                                      cmd.color, cmd.color.a)
 
-    def draw_texture(self, cmd: DrawTexture):
+    def draw_texture(self, cmd: DrawTexture) -> None:
         texture = cmd.texture
         rect = cmd.rect
 
@@ -266,7 +267,7 @@ class Renderer(Mlx):
             # Copy the row in one go
             ctypes.memmove(
                 ctypes.addressof(
-                    self._back_buffer.obj  # type: ignore
+                    cast(Any, self._back_buffer.obj)
                 ) + buffer_offset,
                 row_bytes,
                 len(row_bytes)

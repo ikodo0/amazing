@@ -21,7 +21,7 @@ build:
 
 lint:
 	$(PY)/flake8 .
-	$(PY)/mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	$(PY)/mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs --follow-untyped-imports
 
 lint-strict:
 	$(PY)/flake8 .

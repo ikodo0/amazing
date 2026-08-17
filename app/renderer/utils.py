@@ -8,10 +8,10 @@ class RGB:
         self.b = b
         self.a = a
 
-    def __int__(self):
+    def __int__(self) -> int:
         return (self.r << 24) | (self.g << 16) | (self.b << 8) | self.a
 
-    def to_int(self):
+    def to_int(self) -> int:
         return (self.a << 24) | (self.r << 16) | (self.g << 8) | self.b
 
 

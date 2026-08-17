@@ -1,6 +1,3 @@
-import colorsys
-from itertools import count
-
 from app.renderer.component import Button, Tile
 from app.renderer.screen import Screen
 from app.renderer.texture import MemoryTexture, Texture
@@ -9,37 +6,24 @@ from mazegen.maze import N, E, S, W, solve
 from app.main.state import SharedState
 
 
-def get_next_color(speed=0.03):
-    t = 0.0
-    for _ in count():
-        hue = (t % 1.0)
-        r, g, b = colorsys.hsv_to_rgb(hue, 1.0, 1.0)
-        yield RGB(int(r * 255), int(g * 255), int(b * 255), 200)
-        t += speed
-
-
-color = get_next_color()
-
-
 class BurgerButton(Button):
     def __init__(self, rect: Rect, textures: list[Texture]):
         super().__init__(rect, textures[0])
         self.textures = textures
         self.is_open = False
 
-    def set_state(self, state: bool):
+    def set_state(self, state: bool) -> None:
         self.is_open = state
         self.texture = self.textures[self.is_open]
 
 
 class MazeScreen(Screen):
-    def __init__(self, state: SharedState):
+    def __init__(self, state: SharedState) -> None:
         super().__init__()
 
         self.tile_size = 16
         self.assets = state.assets
         self.config = state.config
-        self.color = get_next_color()
 
         self.state = state
         self.maze = self.state.maze
@@ -92,7 +76,7 @@ class MazeScreen(Screen):
 
         wall_texture = self.state.wall_texture
 
-        def blit_wall_tile(x0: int, y0: int):
+        def blit_wall_tile(x0: int, y0: int) -> None:
             # dst_x0/dst_y0 are in baked pixel coordinates (top-left)
             for py in range(self.tile_size):
                 for px in range(self.tile_size):
@@ -103,7 +87,7 @@ class MazeScreen(Screen):
                         tex_y * wall_texture.width + tex_x]
                     out_pixels[(y0 + py) * WIDTH + (x0 + px)] = packed
 
-        def idx(dx, dy):  # index into 3x3
+        def idx(dx: int, dy: int) -> int:  # index into 3x3
             return dy * 3 + dx
 
         for cy in range(self.state.maze.height):
@@ -144,7 +128,7 @@ class MazeScreen(Screen):
     def solution_path(
         self,
         start: tuple[int, int], end: tuple[int, int]
-    ):
+    ) -> list[Tile]:
         path_cells = solve(self.state.maze, start, end)
 
         line_width = self.tile_size // 4

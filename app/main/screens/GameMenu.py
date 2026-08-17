@@ -113,13 +113,13 @@ class GameMenuScreen(Screen):
             self.color_btn,
         ])
 
-    def redraw_btn_click(self, keycode: Keycode):
+    def redraw_btn_click(self, keycode: Keycode) -> None:
         if keycode != Keycode.LEFT:
             return
         self.state.maze_gen.seed = random.randint(0, 2**32 - 1)
         self.state.maze = self.state.maze_gen.generate()
 
-    def color_btn_click(self, keycode: Keycode):
+    def color_btn_click(self, keycode: Keycode) -> None:
         if keycode != Keycode.LEFT:
             return
         self.state.wall_texture.set_color_offset(RGB(

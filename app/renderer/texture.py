@@ -30,7 +30,7 @@ class Texture:
         b = max(0, min(255, color.b + self.color_offset.b))
         return RGB(r, g, b, color.a)
 
-    def _parse_xpm(self, path: str):
+    def _parse_xpm(self, path: str) -> None:
         with open(path, 'r') as f:
             content = f.read()
 
@@ -77,7 +77,7 @@ class Texture:
         return strings
 
     def _parse_color_line(self, line: str,
-                          chars_per_pixel: int, color_map: dict):
+                          chars_per_pixel: int, color_map: dict) -> None:
         """Parse a single color definition (e.g., "  c #563923")."""
         stripped = line.lstrip()
         if not stripped:
@@ -102,7 +102,8 @@ class Texture:
                 color = self._apply_color_offset(color)
                 color_map[key] = color
 
-    def set_color_offset(self, offset: RGB | tuple[int, int, int] | None):
+    def set_color_offset(self,
+                         offset: RGB | tuple[int, int, int] | None) -> None:
         """Change the color offset and refresh cached pixels."""
         self.color_offset = self._normalize_offset(offset)
         # Clear scaling cache since colors have changed
@@ -111,11 +112,11 @@ class Texture:
         # Re-parse to apply new offset
         self._parse_xpm(self.xpm_path)
 
-    def get_scaled(self, w, h):
+    def get_scaled(self, w: int, h: int) -> list[int]:
         """Returns a pre-scaled, packed 32-bit version of the texture."""
         cache_key = (w, h)
         if not hasattr(self, '_scaled_cache'):
-            self._scaled_cache = {}
+            self._scaled_cache: dict[tuple[int, int], list[int]] = {}
         if cache_key not in self._scaled_cache:
             scaled = []
             for y in range(h):

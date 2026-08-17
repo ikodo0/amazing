@@ -1,11 +1,10 @@
 import sys
 from pydantic import ValidationError
-from app.main.config import read_config
-from mazegen import MazeGenerator, solve, txt_generate, find_open_areas
 from app.main.screens import MazeScreen, MainMenuScreen, GameMenuScreen
 from app.renderer.renderer import Renderer
 from app.renderer.screen import ScreenFactory
 from app.main.state import SharedState
+
 
 def main() -> None:
     if len(sys.argv) == 2:

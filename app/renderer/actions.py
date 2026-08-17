@@ -46,7 +46,7 @@ class ToggleNavigationCommand:
         self.is_open = False
         self.on_state_change: Callable | None = None
 
-    def reset(self):
+    def reset(self) -> None:
         self.is_open = False
 
     def execute(self) -> NavigationCommand:
