@@ -36,12 +36,12 @@ class Cell:
         self.y = y
         self.walls = N | S | E | W
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Cell):
             return NotImplemented
         return self.x == other.x and self.y == other.y
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         return not (self == other)
 
 
@@ -57,16 +57,16 @@ class Maze:
                 row.append(Cell(x, y))
             self.grid.append(row)
 
-    def __getitem__(self, key: tuple[int, int]):
+    def __getitem__(self, key: tuple[int, int]) -> Any:
         x, y = key
         return self.grid[y][x]
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if not isinstance(other, Maze):
             return NotImplemented
         return self.grid == other.grid
 
-    def __ne__(self, other):
+    def __ne__(self, other: Any) -> bool:
         if not isinstance(other, Maze):
             return NotImplemented
         return not (self == other)
@@ -216,7 +216,7 @@ def solve(maze: Maze,
     visited = {start}
     parent = {}
     if start == end:
-        raise ValueError(f"start and end values must differ.")
+        raise ValueError("start and end values must differ.")
     while queue:
         x, y = queue.popleft()
         if ((x, y) == end):
@@ -234,15 +234,14 @@ def solve(maze: Maze,
     # print(f"parent: {len(parent)},\n\nvisited:
     # {len(visited)},\n\nqueue: {len(queue)}")
     current = end
-    solution = []
-    solution = deque()
+    solution: deque[tuple[int, int]] = deque()
     solution.appendleft(current)
     while True:
         current = parent[current]
         solution.appendleft(current)
         if current == start:
             break
-    return solution
+    return list(solution)
 
 
 def txt_generate(config: Any, m: Maze,
@@ -291,4 +290,3 @@ def creates_open_area(maze: Maze, x: int, y: int) -> bool:
                 if is_open_block(maze, bx, by):
                     return True
     return False
-
