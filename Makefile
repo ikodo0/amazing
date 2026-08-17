@@ -1,7 +1,7 @@
 VENV := .venv
 PY   := $(VENV)/bin
 
-install: $(VENV)
+install: $(VENV) build-mlx
 	$(PY)/pip install --upgrade pip
 	$(PY)/pip install -r requirements.txt
 	$(PY)/pip install -e .
@@ -9,11 +9,18 @@ install: $(VENV)
 $(VENV):
 	python3 -m venv $(VENV)
 
+build-mlx: mlx_CLXV
+	cd mlx_CLXV && make
+	$(PY)/pip install ./mlx_CLXV/mlx*.whl
+
+mlx_CLXV:
+	git clone git@github.com:42school/mlx_CLXV.git
+
 run:
-	$(PY)/python3 a_maze_ing.py config.txt
+	CONFIG=config.txt $(PY)/python3 a_maze_ing.py
 
 debug:
-	$(PY)/python3 -m pdb a_maze_ing.py config.txt
+	CONFIG=config.txt $(PY)/python3 -m pdb a_maze_ing.py
 
 build:
 	$(PY)/python3 -m build
@@ -30,8 +37,8 @@ clean:
 	rm -rf __pycache__ .mypy_cache .pytest_cache
 
 fclean: clean
-	rm -rf $(VENV)
+	rm -rf $(VENV) mlx_CLXV
 
 re: fclean install
 
-.PHONY: install run debug lint lint-strict clean fclean re build
+.PHONY: install run debug lint lint-strict clean fclean re build build-mlx
