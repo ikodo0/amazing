@@ -12,6 +12,8 @@ class Config(BaseModel):
     SEED: Optional[int] = Field(default=None)
     PATTERN: Optional[bool] = Field(default=True)
     MODE: Literal["dfs", "dfs_gt"] = Field(default="dfs")
+    WINDOW_HEIGHT: int = Field(gt=0, lt=1000)
+    WINDOW_WIDTH: int = Field(gt=0, lt=1001)
 
     @field_validator("ENTRY", "EXIT", mode="before")
     @classmethod
@@ -38,11 +40,12 @@ def read_config(config: str) -> Config:
             item = item.strip()
             if item == "":
                 continue
-            if (item[0] != "#"):
-                if "=" not in item:
-                    raise ValueError(
-                        f"{config}: expected KEY=VALUE, got '{item}'"
-                        )
-                key, value = item.split("=", 1)
-                data[key] = value
+            if item.startswith('#'):
+                continue
+            if "=" not in item:
+                raise ValueError(
+                    f"{config}: expected KEY=VALUE, got '{item}'"
+                    )
+            key, value = item.split("=", 1)
+            data[key] = value
         return Config.model_validate(data)

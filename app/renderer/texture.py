@@ -7,26 +7,26 @@ class Texture:
         self.height = 0
         self.pixels = []
         self._parse_xpm(xpm_path)
-    
+
     def _parse_xpm(self, path: str):
         with open(path, 'r') as f:
             content = f.read()
-        
+
         # Extract all quoted strings from the XPM file
         strings = self._extract_strings(content)
-        
+
         # Parse header: "width height colors chars-per-pixel"
         header = strings[0].split()
         self.width = int(header[0])
         self.height = int(header[1])
         num_colors = int(header[2])
         chars_per_pixel = int(header[3])
-        
+
         # Build color map from color definitions
         color_map = {}
         for i in range(1, num_colors + 1):
             self._parse_color_line(strings[i], chars_per_pixel, color_map)
-        
+
         # Parse pixel data
         for i in range(num_colors + 1, num_colors + 1 + self.height):
             pixel_line = strings[i]
@@ -36,13 +36,13 @@ class Texture:
                 # Pack as 0xAARRGGBB
                 packed = (color.a << 24) | (color.r << 16) | (color.g << 8) | color.b
                 self.pixels.append(packed)
-    
+
     def _extract_strings(self, content: str) -> list[str]:
         """Extract all quoted strings from XPM file in order."""
         strings = []
         in_quote = False
         current = ""
-        
+
         for char in content:
             if char == '"':
                 in_quote = not in_quote
@@ -51,9 +51,9 @@ class Texture:
                     current = ""
             elif in_quote:
                 current += char
-        
+
         return strings
-    
+
     def _parse_color_line(self, line: str, chars_per_pixel: int, color_map: dict):
         """Parse a single color definition (e.g., "  c #563923")."""
         stripped = line.lstrip()
@@ -61,12 +61,12 @@ class Texture:
             return
         key = line[:chars_per_pixel]
         color_def = line[chars_per_pixel:].strip()
-        
+
         # Extract hex color from "c #RRGGBB" format
         parts = color_def.split()
         if len(parts) >= 2:
             color_value = parts[1]
-            
+
             if color_value.lower() == 'none':
                 color_map[key] = RGB(0, 0, 0, 0)  # Transparent
             elif color_value.startswith('#') and len(color_value) == 7:

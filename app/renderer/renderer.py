@@ -16,7 +16,7 @@ class Renderer(Mlx):
             height: int = 600,
             width: int = 800,
             title: str = "Application",
-            swap_buffers: Callable = lambda: None,
+            swap_buffers: Callable | None = None,
             screen_factory: ScreenFactory | None = None,
     ) -> None:
         super().__init__()
@@ -71,7 +71,8 @@ class Renderer(Mlx):
         keycode = Keycode(code)
         for s in self._screen_stack:
             for c in s.components:
-                if self._point_in_rect(x, y, c.rect):
+                if self._point_in_rect(x, y, c.rect) and \
+                   keycode == Keycode.LEFT:
                     if (hasattr(c, 'navigation_command')):
                         self._handle_navigation(
                             getattr(c, 'navigation_command')
@@ -80,7 +81,8 @@ class Renderer(Mlx):
 
     def _handle_navigation(
         self,
-        command: list[NavigationCommand | ToggleNavigationCommand] | NavigationCommand | ToggleNavigationCommand
+        command: list[NavigationCommand | ToggleNavigationCommand]
+        | NavigationCommand | ToggleNavigationCommand
     ) -> None:
         if not self.screen_factory:
             return
@@ -121,9 +123,11 @@ class Renderer(Mlx):
 
         (_, mouse_x, mouse_y) = self.mlx_mouse_get_pos(self._win)
         for screen in self._screen_stack:
+            screen.on_enter()
             for c in screen.components:
                 hovered = self._point_in_rect(mouse_x, mouse_y, c.rect)
                 commands.extend(c.render(hovered))
+            screen.on_exit()
 
         commands.sort(key=lambda cmd: getattr(cmd, "z", 0))
 
@@ -139,7 +143,8 @@ class Renderer(Mlx):
                 self.draw_texture(cmd)
         # print(f"All commands executed in: {time() - commands_start_time}")
 
-        self._swap_buffers(self._frame)
+        if self._swap_buffers:
+            self._swap_buffers(self._frame)
         self._front_buffer[:len(self._back_buffer)] = self._back_buffer
 
         self.mlx_put_image_to_window(
@@ -172,11 +177,6 @@ class Renderer(Mlx):
             ).to_bytes(4, byteorder='little')
 
     def put_pixel_blend(self, x: int, y: int, color: RGB, alpha_u8: int):
-        """
-        Alpha-blends `color` over existing back-buffer pixel.
-        - alpha_u8: 0..255 coverage from the glyph (0 transparent, 255 opaque)
-        - This blends color.r/g/b, and writes the resulting 4-byte packed pixel.
-        """
         if not (0 <= x < self._width and 0 <= y < self._height):
             return
 
@@ -187,7 +187,6 @@ class Renderer(Mlx):
 
         offset = y * self._line_sz + x * 4
 
-        # Destination channels (as stored by your put_pixel)
         dst = int.from_bytes(self._back_buffer[offset:offset + 4],
                              byteorder="little", signed=False)
         dst_a = (dst >> 24) & 0xFF
@@ -195,14 +194,12 @@ class Renderer(Mlx):
         dst_g = (dst >> 8) & 0xFF
         dst_b = dst & 0xFF
 
-        # Source channels from RGB (your int(RGB) packs as: a<<24 | r<<16 | g<<8 | b)
         src_r = color.r & 0xFF
         src_g = color.g & 0xFF
         src_b = color.b & 0xFF
 
-        # If you want glyph coverage to be multiplied by color.a:
         src_a = (color.a & 0xFF)
-        a = (a_src * src_a) // 255  # effective alpha in 0..255
+        a = (a_src * src_a) // 255
         if a == 0:
             return
 
@@ -212,7 +209,6 @@ class Renderer(Mlx):
         out_g = (a * src_g + inv_a * dst_g) // 255
         out_b = (a * src_b + inv_a * dst_b) // 255
 
-        # For out alpha, the standard "over" formula:
         out_a = (a + (inv_a * dst_a) // 255)
 
         out = (out_a << 24) | (out_r << 16) | (out_g << 8) | out_b
@@ -228,7 +224,6 @@ class Renderer(Mlx):
         x0 = x + g.x_bearing
         y0 = baseline - g.y_bearing
 
-        # alpha is row-major w*h
         idx = 0
         for cy in range(g.h):
             for cx in range(g.w):

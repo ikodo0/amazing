@@ -14,9 +14,9 @@ LETTER = {N: "N", S: "S", E: "E", W: "W"}
 STEP = {(0, -1): N, (0, 1): S, (1, 0): E, (-1, 0): W}
 
 PATTERN = [
-    "X  X XXX",
-    "X  X   X",
-    "XXXX XXX",
+    " X X XXX",
+    " X X   X",
+    " XXX XXX",
     "   X X  ",
     "   X XXX"
 ]
@@ -32,6 +32,14 @@ class Cell:
         self.x = x
         self.y = y
         self.walls = N | S | E | W
+
+    def __eq__(self, other):
+        if not isinstance(other, Cell):
+            return NotImplemented
+        return self.x == other.x and self.y == other.y
+
+    def __ne__(self, other):
+        return not (self == other)
 
 
 class Maze:
@@ -49,6 +57,16 @@ class Maze:
     def __getitem__(self, key: tuple[int, int]):
         x, y = key
         return self.grid[y][x]
+
+    def __eq__(self, other):
+        if not isinstance(other, Maze):
+            return NotImplemented
+        return self.grid == other.grid
+
+    def __ne__(self, other):
+        if not isinstance(other, Maze):
+            return NotImplemented
+        return not (self == other)
 
     def in_bounds(self, x: int, y: int) -> bool:
         """Returns bool if inside bounds of maze"""

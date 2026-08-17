@@ -267,35 +267,41 @@ def render_solution_path(
 ) -> list[Tile]:
     path_cells = solve_fn(maze, start, end)
 
+    line_width = tile_size // 4  # ~4 pixels for tile_size=16
+
     def cell_center(cx: int, cy: int) -> tuple[int, int]:
         grid_x = 1 + cx * 2
         grid_y = 1 + cy * 2
         # center tile’s top-left pixel
         return (
-            offset_x + (grid_x + 1) * tile_size,
-            offset_y + (grid_y + 1) * tile_size,
+            offset_x + (grid_x + 1) * tile_size + tile_size // 2,
+            offset_y + (grid_y + 1) * tile_size + tile_size // 2,
         )
 
-    def rect_from_center(px: int, py: int) -> Rect:
-        return Rect(px, py, tile_size, tile_size)
-
     tiles: list[Tile] = []
-    centers = set()
 
-    for i, (cx, cy) in enumerate(path_cells):
-        px, py = cell_center(cx, cy)
-        centers.add((px, py))
-        tiles.append(Tile(rect_from_center(px, py), RGB(255, 0, 0)))
+    for i in range(len(path_cells) - 1):
+        x1, y1 = cell_center(*path_cells[i])
+        x2, y2 = cell_center(*path_cells[i + 1])
 
-        # draw connector from previous to current
-        if i > 0:
-            ppx, ppy = cell_center(*path_cells[i - 1])
-            mx = (ppx + px) // 2
-            my = (ppy + py) // 2
-            tiles.append(Tile(rect_from_center(mx, my), RGB(255, 0, 0)))
+        # Vertical movement (same x)
+        if x1 == x2:
+            connector_rect = Rect(
+                x1 - line_width // 2,
+                min(y1, y2),
+                line_width,
+                abs(y2 - y1) + 1
+            )
+        # Horizontal movement (same y)
+        else:
+            connector_rect = Rect(
+                min(x1, x2),
+                y1 - line_width // 2,
+                abs(x2 - x1) + 1,
+                line_width
+            )
 
-    # Optional: if you want to avoid duplicates when path has repeats
-    # return tiles without duplicates requires more work (track rects), so keep simple for now.
+        tiles.append(Tile(connector_rect, RGB(255, 0, 0)))
 
     return tiles
 
@@ -364,15 +370,16 @@ if __name__ == '__main__':
     )
     title.center()
 
-    exit_btn_rect = Rect(
+    exit_btn = create_button(
+        Rect(
                 bg.rect.x,
                 bg.rect.y + (bg.rect.h - (bg.rect.h // 6)),
                 bg.rect.w,
                 bg.rect.h // 6
-            )
-    exit_btn = Button(
-        exit_btn_rect,
-        Text(exit_btn_rect, assets.get_font('minecraft'), 'Exit', RGB(255, 0, 0), z=20),
+            ),
+        "Exit",
+        assets.get_font('minecraft'),
+        RGB(255, 0, 0),
         RGB(255, 255, 255),
         RGB(0, 0, 0, 64),
         z=20
@@ -390,7 +397,42 @@ if __name__ == '__main__':
     ]
     exit_btn.on_click_callback = exit_btn_callback
 
-    game_menu_screen = Screen(bg, title, exit_btn)
+    rerender_btn = create_button(
+        Rect(
+            bg.rect.x,
+            bg.rect.y + exit_btn.rect.h,
+            bg.rect.w,
+            bg.rect.h // 6
+        ),
+        "Refresh",
+        assets.get_font('minecraft'),
+        RGB(0, 64, 0),
+        RGB(255, 255, 255),
+        RGB(0, 0, 0, 64),
+        z=20
+    )
+
+    def maze_render_callback(keycode: Keycode):
+        if keycode != Keycode.LEFT:
+            return
+        game_screen.components.clear()
+        maze_gen.seed = random.randint(0, 2**32 - 1)
+        current_maze = maze_gen.generate()
+        with open("maze.txt", "w") as f:
+            f.write(to_text(current_maze))
+        burger_btn.set_state(False)
+        burger_command.reset()
+        game_screen.components.extend([
+            bake_maze_walls_texture(current_maze, assets.get_texture('wall'), 16,
+                                      offset_x=(config.WINDOW_WIDTH // 2) - ((maze.width * 2 + 3) * 16) // 2, offset_y=64),
+            burger_btn,
+            *render_solution_path(current_maze, (0, 0), (24, 24), solve_fn=solve, offset_x=(config.WINDOW_WIDTH // 2) - ((maze.width * 2 + 3) * 16) // 2, offset_y=64)
+        ])
+
+    rerender_btn.navigation_command = NavigationCommand(ScreenAction.POP)
+    rerender_btn.on_click_callback = maze_render_callback
+
+    game_menu_screen = Screen(bg, title, exit_btn, rerender_btn)
 
     burger_command = ToggleNavigationCommand('game_menu')
     burger_btn = BurgerButton(
@@ -418,22 +460,7 @@ if __name__ == '__main__':
         RGB(255, 200, 1), RGB(0, 255, 0),
     )
 
-    def start_btn_callback(keycode: Keycode):
-        if keycode != Keycode.LEFT:
-            return
-        game_screen.components.clear()
-        maze_gen.seed = random.randint(0, 2**32 - 1)
-        current_maze = maze_gen.generate()
-        with open("maze.txt", "w") as f:
-            f.write(to_text(current_maze))
-        game_screen.components.extend([
-            bake_maze_walls_texture(current_maze, assets.get_texture('wall'), 16,
-                                      offset_x=(config.WINDOW_WIDTH // 2) - ((maze.width * 2 + 3) * 16) // 2, offset_y=64),
-            burger_btn,
-            *render_solution_path(current_maze, (0, 0), (19, 14), solve_fn=solve, offset_x=(config.WINDOW_WIDTH // 2) - ((maze.width * 2 + 3) * 16) // 2, offset_y=64)
-        ])
-
-    start_btn.on_click_callback = start_btn_callback
+    start_btn.on_click_callback = maze_render_callback
     start_btn.navigation_command = NavigationCommand.replace('maze')
 
     settings_btn = create_button(

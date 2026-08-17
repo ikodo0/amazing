@@ -11,6 +11,9 @@ class RGB:
     def __int__(self):
         return (self.r << 24) | (self.g << 16) | (self.b << 8) | self.a
 
+    def to_int(self):
+        return (self.a << 24) | (self.r << 16) | (self.g << 8) | self.b
+
 
 class Rect:
     def __init__(self, x: int, y: int, w: int, h: int):
