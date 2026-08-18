@@ -1,7 +1,7 @@
 from app.renderer.component import Button, Tile
 from app.renderer.screen import Screen
 from app.renderer.texture import MemoryTexture, Texture
-from app.renderer.utils import RGB, Rect
+from app.renderer.utils import Rect
 from mazegen.maze import N, E, S, W, solve, txt_generate
 from app.main.state import SharedState
 
@@ -215,6 +215,6 @@ class MazeScreen(Screen):
                     line_width
                 )
 
-            tiles.append(Tile(connector_rect, RGB(255, 0, 0)))
+            tiles.append(Tile(connector_rect, next(self.state.color)))
 
         return tiles
