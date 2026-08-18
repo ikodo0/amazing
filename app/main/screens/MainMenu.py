@@ -1,8 +1,9 @@
-import os
+import math
+from time import time
 
 from app.main.config import read_config
 from app.renderer.actions import NavigationCommand
-from app.renderer.component import Button, Text
+from app.renderer.component import Button, Text, Tile
 from app.renderer.screen import Screen
 from app.renderer.utils import RGB, Keycode, Rect
 from app.main.state import SharedState
@@ -52,10 +53,18 @@ class MainMenuScreen(Screen):
         )
         self.reload_btn.on_click_callback = self.reload_btn_click
 
+        mario_size = 128
+        self.mario_y = config.WINDOW_HEIGHT - mario_size - 32
+        self.mario = Tile(
+            Rect(0, self.mario_y, mario_size, mario_size),
+            assets.get_texture('mario')
+        )
+
         self.components.extend([
             self.title,
             self.start_btn,
-            self.reload_btn
+            self.reload_btn,
+            self.mario
         ])
 
     # def start_btn_click(self, keycode: Keycode):
@@ -67,12 +76,24 @@ class MainMenuScreen(Screen):
     def reload_btn_click(self, keycode: Keycode) -> None:
         if keycode != Keycode.LEFT:
             return
-        self.state.config = read_config(os.environ.get("CONFIG", "config.txt"))
+        self.state.config = read_config(self.state.config_path)
         config = self.state.config
         self.state.maze_gen = MazeGenerator(
             config.WIDTH, config.HEIGHT,
             config.SEED, config.PERFECT,
-            config.PATTERN or True, config.MODE)
+            config.PATTERN, config.MODE)
+        self.state.maze = self.state.maze_gen.generate()
+
+    def on_enter(self) -> None:
+        """Walk Mario back and forth along the bottom with a hop."""
+        span = self.state.config.WINDOW_WIDTH - self.mario.rect.w
+        if span <= 0:
+            return super().on_enter()
+        t = time()
+        pos = (t * 120) % (span * 2)
+        self.mario.rect.x = int(pos if pos <= span else span * 2 - pos)
+        self.mario.rect.y = self.mario_y - int(abs(math.sin(t * 6)) * 40)
+        return super().on_enter()
 
     def on_exit(self) -> None:
         self.title.color = next(self.state.color)

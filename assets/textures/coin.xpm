@@ -1,0 +1,25 @@
+/* XPM */
+static char *coin[] = {
+"16 16 5 1",
+". c None",
+"D c #8C5A00",
+"G c #C88A00",
+"Y c #FFD23F",
+"W c #FFF3B0",
+"......DDDD......",
+"....DDGGGGDD....",
+"...DGGYYYYGGD...",
+"..DGGYYYYYYGGD..",
+"..DGYYYWWYYYGD..",
+".DGGYYYWWYYYGGD.",
+".DGYYYYWWYYYYGD.",
+".DGYYYYWWYYYYGD.",
+".DGYYYYWWYYYYGD.",
+".DGYYYYWWYYYYGD.",
+".DGGYYYWWYYYGGD.",
+"..DGYYYWWYYYGD..",
+"..DGGYYYYYYGGD..",
+"...DGGYYYYGGD...",
+"....DDGGGGDD....",
+"......DDDD......"
+};

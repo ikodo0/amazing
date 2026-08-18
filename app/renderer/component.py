@@ -134,7 +134,7 @@ class Button(Component):
         self.hover_color = hover_color if hover_color else color
         self.visible = True
         self.z = z
-        self.on_click_callback: Callable | None = None
+        self.on_click_callback: Callable[[Keycode], None] | None = None
 
     def render(self, hovered: bool) -> list[DrawCommand]:
         """Render the button and return draw commands."""

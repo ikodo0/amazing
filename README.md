@@ -92,8 +92,9 @@ not contain `=` is a fatal error. Values are parsed and validated with
 | `EXIT` | `x,y` | inside the grid, `!= ENTRY` | `EXIT=19,14` |
 | `PERFECT` | bool | `True` / `False` | `PERFECT=True` |
 | `OUTPUT_FILE` | str | — | `OUTPUT_FILE=maze.txt` |
-| `WINDOW_WIDTH` | int | `0 < w < 1001` | `WINDOW_WIDTH=1000` |
-| `WINDOW_HEIGHT` | int | `0 < h < 1000` | `WINDOW_HEIGHT=950` |
+
+These are exactly the six keys the subject requires; everything else has a
+default, so a configuration file containing only these will run.
 
 ### Optional keys
 
@@ -102,14 +103,17 @@ not contain `=` is a fatal error. Values are parsed and validated with
 | `SEED` | int | `None` | Seed for the RNG. Same seed + same settings ⇒ identical maze. Omitted ⇒ non-reproducible. |
 | `PATTERN` | bool | `True` | Carve the "42" pattern of closed cells. |
 | `MODE` | `dfs` \| `dfs_gt` | `dfs` | Generation algorithm (see below). Any other value is rejected. |
+| `WINDOW_WIDTH` | int | `1000` | Window width in pixels, `> 0`. |
+| `WINDOW_HEIGHT` | int | `950` | Window height in pixels, `> 0`. A taller window allows a larger maze to be drawn without being clipped. |
 
 ### Example ([config.txt](config.txt))
 
 ```ini
-WIDTH=11
-HEIGHT=10
+WIDTH=25
+HEIGHT=25
 ENTRY=0,0
-EXIT=10,2
+EXIT=24,24
+#IGNORAR_PLEASE
 #SEED=1
 OUTPUT_FILE=maze.txt
 PERFECT=False
@@ -243,9 +247,9 @@ Everything is driven with the mouse (left click).
 
 | Screen | Controls |
 | --- | --- |
-| **Main menu** ([MainMenu.py](app/main/screens/MainMenu.py)) | **Start** — open the maze. **Reload** — re-read the configuration file and rebuild the generator, so a new size, mode or seed can be applied without restarting the program. The title cycles through hues each time the screen is left. |
+| **Main menu** ([MainMenu.py](app/main/screens/MainMenu.py)) | **Start** — open the maze. **Reload** — re-read the configuration file and rebuild the generator, so a new size, mode or seed can be applied without restarting the program. The title cycles through hues each time the screen is left, and Mario hops back and forth along the bottom — `on_enter()` is called once per frame, so it drives the sprite from elapsed time rather than a frame count, keeping the speed the same on any machine. |
 | **Maze** ([Maze.py](app/main/screens/Maze.py)) | The maze itself, plus a burger button in the corner that opens the in-game menu. |
-| **In-game menu** ([GameMenu.py](app/main/screens/GameMenu.py)) | **Redraw** — generate a new maze with a fresh random seed and return to it. **Color** — apply a random colour offset to the wall texture. **Exit** — back to the main menu. |
+| **In-game menu** ([GameMenu.py](app/main/screens/GameMenu.py)) | **Redraw** — generate a new maze with a fresh random seed and return to it. **Color** — apply a random colour offset to the wall texture. **Path** — show or hide the shortest path from entry to exit. **Animate** — generate a new maze, but carved step by step so the algorithm is visible. **Exit** — back to the main menu. |
 
 ### How the maze is drawn
 
@@ -262,8 +266,39 @@ centres, and it is revealed **progressively**: `on_enter()` appends one segment
 per frame, so the solution animates from the entry to the exit rather than
 appearing at once.
 
-Still missing: visible entry and exit markers, and a toggle to hide the
-solution again once it has been drawn (M4.4).
+The path is hidden on start and toggled by **Path** in the in-game menu. The
+button flips `show_path` on the shared state and re-enters the maze screen;
+`on_mount()` rebuilds the components, so hiding drops the segments and showing
+replays the animation. The solution is always computed regardless of
+visibility, so the output file is unaffected.
+
+The entry and exit are marked by 16×16 sprites drawn in the centre tile of
+their cell — Mario at the entry, a gold coin at the exit — so both stay
+identifiable even when they are interior cells rather than corners.
+`cell_rect()` converts cell coordinates into that centre tile, using the same
+grid arithmetic as `bake_maze_walls()`, which is why the markers line up
+exactly with the ends of the drawn path. Both sprites are XPM files in
+[assets/textures/](assets/textures/) and use `c None` for their transparent
+pixels, which land on the empty cell centre the wall baking leaves behind.
+
+### Animated generation
+
+`MazeGenerator.generate_steps()` is the generation algorithm as a generator: it
+yields the maze after every carve, and `generate()` just runs it to completion,
+so both give an identical maze for a given seed. Because `carve()` mutates the
+maze in place, every step yields the *same* object — no copying, no extra
+memory.
+
+**Animate** stores that generator on the shared state instead of a finished
+maze, which is the only difference from **Redraw**. MLX owns the event loop, so
+the animation cannot sleep; `on_enter()` — called once per frame — advances the
+generator 8 carves and re-bakes the walls.
+When it raises `StopIteration` the screen solves the maze and writes the output
+file, then falls back to revealing the solution path one segment per frame. A
+25×25 maze is 605 carves, so it animates over about 76 frames.
+
+Solving is deferred deliberately: a partly carved maze still has isolated
+cells, so the breadth-first search would find no path.
 
 ## Reusable module: `mazegen`
 
@@ -272,7 +307,7 @@ Everything needed to generate and solve a maze lives in
 code. It is packaged as `mazegen` and can be installed into any other project:
 
 ```sh
-pip install dist/mazegen-1.0.0-py3-none-any.whl
+pip install mazegen-1.0.0-py3-none-any.whl
 ```
 
 To rebuild the package from source:

@@ -64,9 +64,9 @@ class GameMenuScreen(Screen):
         redraw_btn_rect = Rect(
             self.background.rect.x,
             self.background.rect.y +
-            (self.title.rect.h) + self.background.rect.h // 6,
+            (self.title.rect.h) + self.background.rect.h // 7,
             self.background.rect.w,
-            self.background.rect.h // 6
+            self.background.rect.h // 7
         )
         self.redraw_btn = Button(
             redraw_btn_rect,
@@ -88,7 +88,7 @@ class GameMenuScreen(Screen):
             self.redraw_btn.rect.y +
             (self.redraw_btn.rect.h),
             self.background.rect.w,
-            self.background.rect.h // 6
+            self.background.rect.h // 7
         )
         self.color_btn = Button(
             color_btn_rect,
@@ -105,12 +105,58 @@ class GameMenuScreen(Screen):
             NavigationCommand.push('maze')
         ]
 
+        path_btn_rect = Rect(
+            self.background.rect.x,
+            self.color_btn.rect.y +
+            (self.color_btn.rect.h),
+            self.background.rect.w,
+            self.background.rect.h // 7
+        )
+        self.path_btn = Button(
+            path_btn_rect,
+            Text(path_btn_rect, assets.get_font('minecraft'),
+                 "Path", RGB(0, 0, 0), z=20),
+            RGB(255, 255, 255),
+            RGB(0, 0, 0, 64),
+            z=20
+        )
+        self.path_btn.on_click_callback = self.path_btn_click
+        self.path_btn.navigation_command = [
+            state.menu_cmd,
+            NavigationCommand.clear(),
+            NavigationCommand.push('maze')
+        ]
+
+        animate_btn_rect = Rect(
+            self.background.rect.x,
+            self.path_btn.rect.y +
+            (self.path_btn.rect.h),
+            self.background.rect.w,
+            self.background.rect.h // 7
+        )
+        self.animate_btn = Button(
+            animate_btn_rect,
+            Text(animate_btn_rect, assets.get_font('minecraft'),
+                 "Animate", RGB(0, 0, 0), z=20),
+            RGB(255, 255, 255),
+            RGB(0, 0, 0, 64),
+            z=20
+        )
+        self.animate_btn.on_click_callback = self.animate_btn_click
+        self.animate_btn.navigation_command = [
+            state.menu_cmd,
+            NavigationCommand.clear(),
+            NavigationCommand.push('maze')
+        ]
+
         self.components.extend([
             self.background,
             self.title,
             self.exit_btn,
             self.redraw_btn,
             self.color_btn,
+            self.path_btn,
+            self.animate_btn,
         ])
 
     def redraw_btn_click(self, keycode: Keycode) -> None:
@@ -118,6 +164,18 @@ class GameMenuScreen(Screen):
             return
         self.state.maze_gen.seed = random.randint(0, 2**32 - 1)
         self.state.maze = self.state.maze_gen.generate()
+
+    def animate_btn_click(self, keycode: Keycode) -> None:
+        if keycode != Keycode.LEFT:
+            return
+        self.state.maze_gen.seed = random.randint(0, 2**32 - 1)
+        self.state.maze_steps = self.state.maze_gen.generate_steps()
+        self.state.maze = next(self.state.maze_steps)
+
+    def path_btn_click(self, keycode: Keycode) -> None:
+        if keycode != Keycode.LEFT:
+            return
+        self.state.show_path = not self.state.show_path
 
     def color_btn_click(self, keycode: Keycode) -> None:
         if keycode != Keycode.LEFT:

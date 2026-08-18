@@ -44,7 +44,7 @@ class ToggleNavigationCommand:
     ) -> None:
         self.screen_name = screen_name
         self.is_open = False
-        self.on_state_change: Callable | None = None
+        self.on_state_change: Callable[[bool], None] | None = None
 
     def reset(self) -> None:
         self.is_open = False

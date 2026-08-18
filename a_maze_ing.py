@@ -9,7 +9,15 @@ from app.main.state import SharedState
 def main() -> None:
     if len(sys.argv) == 2:
         try:
-            state = SharedState()
+            state = SharedState(sys.argv[1])
+        except ValidationError as e:
+            for err in e.errors():
+                key = ".".join(str(x) for x in err["loc"])
+                if key:
+                    print(f"{key}: {err['msg']}", file=sys.stderr)
+                else:
+                    print(err["msg"], file=sys.stderr)
+            sys.exit(1)
         except Exception as e:
             print(e, file=sys.stderr)
             sys.exit(1)

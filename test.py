@@ -5,7 +5,7 @@ from app.main.state import SharedState
 
 
 if __name__ == '__main__':
-    state = SharedState()
+    state = SharedState('config.txt')
 
     renderer = Renderer(
         height=state.config.WINDOW_HEIGHT,

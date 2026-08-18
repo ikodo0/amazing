@@ -1,14 +1,13 @@
 import colorsys
 from itertools import count
-import os
-from typing import Generator
+from typing import Generator, Iterator
 
 from app.main.config import read_config
 from app.renderer.actions import ToggleNavigationCommand
 from app.renderer.font import TTFFont
 from app.renderer.texture import Texture
 from app.renderer.utils import RGB
-from mazegen.maze import MazeGenerator, solve
+from mazegen.maze import Maze, MazeGenerator, solve
 
 
 class AssetManager:
@@ -21,6 +20,8 @@ class AssetManager:
             'wall': Texture("./assets/textures/wall.xpm"),
             'burger': Texture("./assets/textures/burger.xpm"),
             'cross': Texture("./assets/textures/cross.xpm"),
+            'mario': Texture("./assets/textures/mario.xpm"),
+            'coin': Texture("./assets/textures/coin.xpm"),
         }
 
     def get_font(self, name: str) -> TTFFont:
@@ -40,18 +41,21 @@ def get_next_color(speed: float = 0.03) -> Generator[RGB, None, None]:
 
 
 class SharedState():
-    def __init__(self) -> None:
+    def __init__(self, config_path: str) -> None:
         self.assets = AssetManager()
-        self.config = read_config(os.environ.get('CONFIG', 'config.txt'))
+        self.config_path = config_path
+        self.config = read_config(config_path)
 
         self.menu_cmd = ToggleNavigationCommand('game_menu')
 
         self.maze_gen = MazeGenerator(
             self.config.WIDTH, self.config.HEIGHT,
             self.config.SEED, self.config.PERFECT,
-            self.config.PATTERN or True, self.config.MODE)
+            self.config.PATTERN, self.config.MODE)
         self.maze = self.maze_gen.generate()
         self.solution = solve(self.maze, self.config.ENTRY, self.config.EXIT)
+        self.maze_steps: Iterator[Maze] | None = None
+        self.show_path = False
         self.color = get_next_color()
 
         self.wall_texture = self.assets.get_texture('wall')

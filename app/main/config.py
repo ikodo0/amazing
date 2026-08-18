@@ -10,10 +10,10 @@ class Config(BaseModel):
     PERFECT: bool = Field()
     OUTPUT_FILE: str = Field()
     SEED: Optional[int] = Field(default=None)
-    PATTERN: Optional[bool] = Field(default=True)
+    PATTERN: bool = Field(default=True)
     MODE: Literal["dfs", "dfs_gt"] = Field(default="dfs")
-    WINDOW_HEIGHT: int = Field(gt=0, lt=1000)
-    WINDOW_WIDTH: int = Field(gt=0, lt=1001)
+    WINDOW_HEIGHT: int = Field(default=950, gt=0)
+    WINDOW_WIDTH: int = Field(default=1000, gt=0)
 
     @field_validator("ENTRY", "EXIT", mode="before")
     @classmethod

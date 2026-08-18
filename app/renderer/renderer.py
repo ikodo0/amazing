@@ -18,7 +18,7 @@ class Renderer(Mlx):
             height: int = 600,
             width: int = 800,
             title: str = "Application",
-            swap_buffers: Callable | None = None,
+            swap_buffers: Callable[[int], None] | None = None,
             screen_factory: ScreenFactory | None = None,
     ) -> None:
         super().__init__()
@@ -45,6 +45,8 @@ class Renderer(Mlx):
         self._height = height
 
         self._screen_stack: list[Screen] = []
+
+        self._closed = False
 
         self._init_time = time()
 
@@ -111,9 +113,6 @@ class Renderer(Mlx):
             self.clear_screens()
 
     def _hk_close(self, _param: Any) -> None:
-        self.mlx_destroy_image(self._mlx, self._front)
-        self.mlx_destroy_image(self._mlx, self._back)
-        self.mlx_destroy_window(self._mlx, self._win)
         self.mlx_loop_exit(self._mlx)
 
     def _hk_loop(self, _param: Any) -> None:
@@ -174,10 +173,14 @@ class Renderer(Mlx):
                 NavigationCommand(ScreenAction.PUSH, 'default')
             )
         self.mlx_loop(self._mlx)
+        self.close()
 
     def close(self) -> None:
-        self.mlx_destroy_image(self._mlx, self._front_buffer)
-        self.mlx_destroy_image(self._mlx, self._front_buffer)
+        if self._closed:
+            return
+        self._closed = True
+        self.mlx_destroy_image(self._mlx, self._front)
+        self.mlx_destroy_image(self._mlx, self._back)
         self.mlx_destroy_window(self._mlx, self._win)
         self.mlx_release(self._mlx)
 
@@ -266,13 +269,23 @@ class Renderer(Mlx):
 
         scaled = texture.get_scaled(rect.w, rect.h)
 
+        # Clip to the window so we never memmove outside the buffer
+        col_start = max(0, -rect.x)
+        col_end = min(rect.w, self._width - rect.x)
+        if col_start >= col_end:
+            return
+
         for y in range(rect.h):
-            buffer_offset = (rect.y + y) * self._line_sz + rect.x * 4
+            dst_y = rect.y + y
+            if not (0 <= dst_y < self._height):
+                continue
+            buffer_offset = dst_y * self._line_sz + (rect.x + col_start) * 4
             texture_offset = y * rect.w
             # Extract the row as bytes
             row_bytes = b''.join(
                 int(color).to_bytes(4, byteorder='little')
-                for color in scaled[texture_offset:texture_offset + rect.w]
+                for color in scaled[texture_offset + col_start:
+                                    texture_offset + col_end]
             )
             # Copy the row in one go
             ctypes.memmove(

@@ -6,7 +6,7 @@ import sys
 
 N, E, S, W = 1, 2, 4, 8
 
-WORD_DELTA = {N: "North", 2: "South", 4: "East", 8: "West"}
+WORD_DELTA = {N: "North", E: "East", S: "South", W: "West"}
 DELTA = {N: (0, -1), S: (0, 1), E: (1, 0), W: (-1, 0)}
 OPPOSITE = {N: S, S: N, E: W, W: E}
 
@@ -151,8 +151,9 @@ class MazeGenerator:
             if creates_open_area(maze, x, y):
                 maze.uncarve(x, y, d)
 
-    def generate(self) -> Maze:
+    def generate_steps(self) -> Iterator[Maze]:
         """Randomly carves a perfect maze using DFS."""
+        """Yields the maze after every carve, for animation."""
         """Checks unvisited neightbors, randomly selectes where to move."""
         """If no movement possible, come back and continue."""
         """It appends and pops until stack is empty."""
@@ -195,10 +196,16 @@ class MazeGenerator:
                 maze.carve(x, y, d)
                 visited.add((nx, ny))
                 stack.append((nx, ny))
+                yield maze
             else:
                 stack.remove((x, y))
         if not self.is_perfect:
             self.knock_walls(maze, random_gen, walls_protected)
+        yield maze
+
+    def generate(self) -> Maze:
+        """Runs generate_steps() to the end, returns the finished maze."""
+        *_, maze = self.generate_steps()
         return maze
 
 
@@ -257,7 +264,7 @@ def txt_generate(config: Any, m: Maze,
             dy = s[i + 1][1] - s[i][1]
             letters_arr.append(LETTER[STEP[dx, dy]])
         letters = "".join(letters_arr)
-        f.write(f"\n\n{letters}")
+        f.write(f"\n{letters}\n")
 
 
 def is_open_block(maze: Maze, x: int, y: int) -> bool:

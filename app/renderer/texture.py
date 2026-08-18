@@ -76,8 +76,8 @@ class Texture:
 
         return strings
 
-    def _parse_color_line(self, line: str,
-                          chars_per_pixel: int, color_map: dict) -> None:
+    def _parse_color_line(self, line: str, chars_per_pixel: int,
+                          color_map: dict[str, RGB]) -> None:
         """Parse a single color definition (e.g., "  c #563923")."""
         stripped = line.lstrip()
         if not stripped:

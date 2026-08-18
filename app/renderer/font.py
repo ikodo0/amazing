@@ -11,7 +11,7 @@ class Glyph:
     y_bearing: int
     x_advance: int
     y_advance: int
-    alpha: list  # row-major array of alpha values
+    alpha: list[int]  # row-major array of alpha values
 
 
 class TTFFont:

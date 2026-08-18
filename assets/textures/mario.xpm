@@ -1,0 +1,27 @@
+/* XPM */
+static char *mario[] = {
+"16 16 7 1",
+". c None",
+"R c #D82800",
+"S c #FCA044",
+"B c #6A3000",
+"L c #0058F8",
+"K c #000000",
+"Y c #FFC400",
+".....RRRRR......",
+"....RRRRRRRRR...",
+"....BBBSSKS.....",
+"...BSBSSSKSSS...",
+"...BSBBSSSKSSS..",
+"...BBSSSSSSSS...",
+".....SSSSSSS....",
+"...RRLLLLLRR....",
+"..RRRLLLLLRRR...",
+".RRRRLYLLYLRRRR.",
+"SSRRLLYLLYLLRRSS",
+"SSSRLLLLLLLLRSSS",
+"SS.LLLLLLLLLL.SS",
+"...LLLL..LLLL...",
+"..BBBB....BBBB..",
+".BBBBB....BBBBB."
+};

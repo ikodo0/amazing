@@ -45,25 +45,47 @@ class MazeScreen(Screen):
         state.menu_cmd.on_state_change = self.menu_btn.set_state
         self.menu_btn.navigation_command = state.menu_cmd
 
+        self.rebuild()
+
+    def rebuild(self) -> None:
+        """Rebuilds the walls and markers from the current maze."""
+        self.components.clear()
         self.components.extend([
             self.menu_btn,
-            self.bake_maze_walls()
+            self.bake_maze_walls(),
+            *self.entry_exit_tiles()
         ])
+
+    def finish_generation(self) -> None:
+        """Solves the finished maze and writes the output file."""
+        self.solution_tiles = self.solution_path(self.config.ENTRY,
+                                                 self.config.EXIT)
+        if not self.state.show_path:
+            self.solution_tiles = []
+        txt_generate(self.config, self.maze, self.solution)
 
     def on_mount(self) -> None:
         self.config = self.state.config
         self.maze = self.state.maze
-        self.components.clear()
-        self.components.extend([
-            self.menu_btn,
-            self.bake_maze_walls()
-        ])
-        self.solution_tiles = self.solution_path(self.config.ENTRY,
-                                                 self.config.EXIT)
-        txt_generate(self.config, self.maze, self.state.solution)
+        self.offset_x = (self.config.WINDOW_WIDTH // 2) - \
+            ((self.maze.width * 2 + 3) * self.tile_size) // 2
+        self.solution_tiles = []
+        self.rebuild()
+        if self.state.maze_steps is None:
+            self.finish_generation()
 
     def on_enter(self) -> None:
-        if len(self.solution_tiles) > 0:
+        steps = self.state.maze_steps
+        if steps is not None:
+            for _ in range(8):
+                try:
+                    next(steps)
+                except StopIteration:
+                    self.state.maze_steps = None
+                    self.finish_generation()
+                    break
+            self.rebuild()
+        elif len(self.solution_tiles) > 0:
             tile = self.solution_tiles.pop(0)
             self.components.append(tile)
         return super().on_enter()
@@ -128,6 +150,24 @@ class MazeScreen(Screen):
             MemoryTexture(WIDTH, HEIGHT, out_pixels)
         )
 
+    def cell_rect(self, cx: int, cy: int) -> Rect:
+        grid_x = 1 + cx * 2
+        grid_y = 1 + cy * 2
+        return Rect(
+            self.offset_x + (grid_x + 1) * self.tile_size,
+            self.offset_y + (grid_y + 1) * self.tile_size,
+            self.tile_size,
+            self.tile_size
+        )
+
+    def entry_exit_tiles(self) -> list[Tile]:
+        return [
+            Tile(self.cell_rect(*self.config.ENTRY),
+                 self.assets.get_texture('mario')),
+            Tile(self.cell_rect(*self.config.EXIT),
+                 self.assets.get_texture('coin'))
+        ]
+
     def solution_path(
         self,
         start: tuple[int, int], end: tuple[int, int]
@@ -136,6 +176,7 @@ class MazeScreen(Screen):
             self.solution = solve(self.state.maze, start, end)
         except Exception as e:
             print(f"Failed to solve maze: {e}")
+            self.solution = []
             return []
 
         line_width = self.tile_size // 4
